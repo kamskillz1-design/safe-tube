@@ -12,6 +12,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="SafeTube Kids" />
     <title>SafeTube Kids</title>
+    <script>
+      (function () {
+        var redirect = sessionStorage.getItem("safetube-redirect");
+        if (!redirect) return;
+        sessionStorage.removeItem("safetube-redirect");
+        if (redirect.indexOf(location.origin) === 0) history.replaceState(null, "", redirect);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

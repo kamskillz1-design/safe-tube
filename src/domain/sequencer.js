@@ -1,7 +1,7 @@
 // Feed sequencing engine — pure functions.
 // Rules: calm-first ranking, strict category alternation (never two entertainment videos
 // back-to-back), and the token economy (entertainment unlocks cost tokens).
-import { EDUCATIONAL_CATEGORIES, ENTERTAINMENT_CATEGORY, TOKEN_RULES } from "./constants";
+import { CATEGORIES, EDUCATIONAL_CATEGORIES, ENTERTAINMENT_CATEGORY, TOKEN_RULES } from "./constants";
 
 const CALM_KEYWORDS = [
   "song", "story", "stories", "slow", "gentle", "calm", "relax", "learn", "learning",
@@ -43,6 +43,14 @@ export function buildQueue(videos, tokenBalance, level = "standard", entertainme
       .map(({ v }) => v);
   });
 
+  // Category picks from the folder bar, and library rows with a new label,
+  // must still be playable. Dropping them left the watch page blank.
+  const known = new Set([ENTERTAINMENT_CATEGORY, ...EDUCATIONAL_CATEGORIES]);
+  const unmatched = videos.filter((video) => !known.has(video.category));
+  if (unmatched.length) {
+    pools[CATEGORIES.STEM] = [...(pools[CATEGORIES.STEM] || []), ...unmatched];
+  }
+
   const queue = [];
   const cursor = {};
   let tokens = tokenBalance;
@@ -53,7 +61,7 @@ export function buildQueue(videos, tokenBalance, level = "standard", entertainme
   const pick = (category) => {
     const pool = pools[category];
     const i = cursor[category] ?? 0;
-    if (i >= pool.length) return null;
+    if (!pool || i >= pool.length) return null;
     cursor[category] = i + 1;
     return pool[i];
   };

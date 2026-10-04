@@ -23,6 +23,16 @@ const RouteFallback = () => (
   </div>
 );
 
+// GitHub Pages serves this app under /safe-tube. Without this, opening a
+// profile navigates to /watch/:id on the domain root and the site bounces home.
+function appBasename() {
+  const path = window.location.pathname;
+  if (path === "/safe-tube" || path.startsWith("/safe-tube/")) return "/safe-tube";
+  const base = import.meta.env.BASE_URL || "/";
+  if (!base || base === "/") return undefined;
+  return base.replace(/\/$/, "");
+}
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
@@ -59,7 +69,7 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
+        <Router basename={appBasename()}>
           <ScrollToTop />
           <AuthenticatedApp />
         </Router>
