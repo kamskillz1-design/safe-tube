@@ -4,6 +4,11 @@ import { clearParentSignedIn, markParentSignedIn } from '@/lib/parentSession';
 
 const AuthContext = createContext();
 
+function appPath(path) {
+  const onPages = window.location.pathname === '/safe-tube' || window.location.pathname.startsWith('/safe-tube/');
+  return `${onPages ? '/safe-tube' : ''}${path}`;
+}
+
 async function loadMergedUser(sessionUser) {
   if (!sessionUser) return null;
   try {
@@ -116,14 +121,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     if (shouldRedirect) {
-      window.location.href = '/login';
+      window.location.href = appPath('/login');
     }
   };
 
   const navigateToLogin = () => {
     const path = `${window.location.pathname}${window.location.search}`;
-    const returnTo = path && path !== '/login' ? `?returnTo=${encodeURIComponent(path)}` : '';
-    window.location.href = `/login${returnTo}`;
+    const loginPath = appPath('/login');
+    const returnTo = path && path !== loginPath ? `?returnTo=${encodeURIComponent(path)}` : '';
+    window.location.href = `${loginPath}${returnTo}`;
   };
 
   return (
