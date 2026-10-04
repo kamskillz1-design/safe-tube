@@ -27,15 +27,22 @@
       if (location.hostname.endsWith("github.io")) {
         var style = document.createElement("link");
         style.rel = "stylesheet";
-        style.href = "index-BsuKgdwa.css";
+        style.href = "assets/index-BsuKgdwa.css";
         document.head.appendChild(style);
         var app = document.createElement("script");
         app.type = "module";
         app.crossOrigin = "anonymous";
-        app.src = "index-5LT-UUPo.js";
+        app.src = "assets/index-5LT-UUPo.js";
         document.head.appendChild(app);
       }
     </script>
-    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if (!location.hostname.endsWith("github.io")) {
+        var dev = document.createElement("script");
+        dev.type = "module";
+        dev.src = "/src/main.jsx";
+        document.body.appendChild(dev);
+      }
+    </script>
   </body>
 </html>
