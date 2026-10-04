@@ -12,18 +12,61 @@ import {
   maybeAutoRefresh,
 } from "@/app/library";
 import { applyPreferences, loadPreferences } from "@/app/preferences";
+import { searchVideos } from "@/adapters/youtubeClient";
+import { putLibraryVideos } from "@/adapters/localDb";
+import { applyWhitelistGates } from "@/domain/gates";
+import { safeQuery } from "@/domain/safety";
 
 const allowed = (videos) => videos.filter((video) => video.category !== "Music_Dance");
+
+async function seedStarterVideos(profile) {
+  const language = profile.targetLanguages?.[0] || "en";
+  const queries = ["learning for kids", "stories for kids", "science for kids", "animals for kids"];
+  const saved = [];
+  for (const query of queries) {
+    const term = safeQuery(query);
+    if (!term) continue;
+    const found = await searchVideos({ term, languageCode: language, maxResults: 6 });
+    const gated = applyWhitelistGates(found, profile.ageGroup).filter((video) => allowed(video));
+    if (!gated.length) continue;
+    const now = new Date().toISOString();
+    const rows = gated.slice(0, 4).map((video) => ({
+      id: video.id,
+      title: video.title,
+      description: video.description,
+      channelId: video.channelId,
+      channelTitle: video.channelTitle,
+      category: "STEM",
+      ageGroup: profile.ageGroup,
+      language: (video.language || language || "en").slice(0, 2).toLowerCase() || "en",
+      durationSeconds: video.durationSeconds,
+      viewCount: video.viewCount,
+      thumbnail: video.thumbnail,
+      approved: true,
+      addedAt: now,
+      sourceChannelId: video.channelId,
+    }));
+    await putLibraryVideos(rows);
+    saved.push(...rows);
+    if (saved.length >= 8) break;
+  }
+  return saved.length;
+}
 
 export async function loadFeed(profile) {
   await importApprovedDiscovery(profile.ageGroup);
   let videos = allowed(await getLibraryVideosForProfile(profile));
   if (!videos.length) {
     const firstRun = await ensureLibraryVideos(profile);
-    if (!firstRun.ok) {
-      throw new YoutubeApiError("The video library is not available yet.", firstRun.code || "UNKNOWN");
-    }
     videos = allowed(await getLibraryVideosForProfile(profile));
+    if (!videos.length) {
+      try {
+        await seedStarterVideos(profile);
+      } catch (error) {
+        if (!firstRun.ok) throw error;
+      }
+      videos = allowed(await getLibraryVideosForProfile(profile));
+    }
   } else {
     maybeAutoRefresh();
   }

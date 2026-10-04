@@ -78,6 +78,21 @@ export default async function handler(req, res) {
       const details = await ytFetch("/videos", { part: "snippet,contentDetails,statistics", id: ids.join(",") }, apiKey);
       return ok(res, { videos: (details.items || []).map(toVideo) });
     }
+    if (payload.action === "suggestChannels") {
+      const query = safeQuery(payload.query);
+      if (!query) return fail(res, "query is required.", "INVALID_INPUT");
+      const languageCode = /^[a-z]{2}$/.test(payload.languageCode || "") ? payload.languageCode : "en";
+      const region = { ur: "PK", ar: "SA", hi: "IN", bn: "BD", fr: "FR", es: "ES", tr: "TR", id: "ID" }[languageCode];
+      const search = await ytFetch("/search", { part: "snippet", q: query, type: "channel", maxResults: 8, relevanceLanguage: languageCode, safeSearch: "strict", ...(region ? { regionCode: region } : {}) }, apiKey);
+      const channels = (search.items || []).map((item) => ({
+        query,
+        channelId: item.snippet?.channelId ?? item.id?.channelId ?? null,
+        title: plain(item.snippet?.title, 80),
+        description: plain(item.snippet?.description, 180),
+        language: languageCode,
+      })).filter((channel) => channel.channelId && channel.title);
+      return ok(res, { channels });
+    }
     if (payload.action === "searchVideos") {
       const term = safeQuery(payload.term);
       if (!term) return fail(res, "term is required.", "INVALID_INPUT");

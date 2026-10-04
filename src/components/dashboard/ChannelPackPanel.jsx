@@ -13,6 +13,7 @@ import {
 import { loadCategoryTree } from "@/app/categories";
 import { categoryPathLabel } from "@/components/dashboard/CategoryPicker";
 import { LANGUAGES } from "@/domain/constants";
+import { nextChannelChoice } from "@/app/nextChoice";
 
 export default function ChannelPackPanel({ t }) {
   const [profiles, setProfiles] = useState([]);
@@ -135,7 +136,14 @@ export default function ChannelPackPanel({ t }) {
                     onClick={async () => {
                       setBusy(key);
                       await acceptSuggestion(profile, row);
-                      setSuggestions(await listSuggestionsFor(profile, null));
+                      const next = await nextChannelChoice({
+                        ageGroup: profile.ageGroup,
+                        language: row.language,
+                        category: row.primaryCategoryId || "STEM",
+                        exclude: suggestions.map((item) => item.name),
+                      });
+                      const remaining = (await listSuggestionsFor(profile, null)).filter((item) => item.name !== row.name);
+                      setSuggestions(next ? [{ ...row, name: next.title, channelId: next.channelId }, ...remaining] : remaining);
                       setBusy(null);
                     }}
                     className="flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-semibold text-primary-foreground"

@@ -248,7 +248,7 @@ export async function getLibraryVideosForProfile(profile) {
   );
   const stored = (await libraryVideosForAge(profile.ageGroup)).filter((v) => v.approved !== false);
   return stored
-    .filter((video) => allowed.has((video.language || "en").slice(0, 2).toLowerCase()))
+    .filter((video) => allowed.has((video.language || "en").slice(0, 2).toLowerCase() || "en"))
     .map(({ approved, addedAt, sourceChannelId, ageGroup, ...video }) => video);
 }
 

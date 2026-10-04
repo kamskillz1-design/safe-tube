@@ -28,6 +28,11 @@ export async function fetchChannelUploads(channelId, maxResults = 12) {
   return data.videos;
 }
 
+export async function suggestChannels(query, languageCode = "en") {
+  const data = await invoke({ action: "suggestChannels", query, languageCode });
+  return data.channels || [];
+}
+
 export async function searchVideos({ term, languageCode, maxResults = 12 }) {
   const data = await invoke({ action: "searchVideos", term, languageCode, maxResults });
   return data.videos;

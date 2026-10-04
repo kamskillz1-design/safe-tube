@@ -8,6 +8,7 @@ import { youtubeSource } from "@/content/sources/youtubeSource";
 import { muslimKidsPack, suggestionsFor } from "@/content/packs/muslimKids";
 import { parseVideoId, youtubeErrorKey } from "@/content/parseVideoId";
 import { addParentChannel } from "@/app/channelPacks";
+import { nextChannelChoice } from "@/app/nextChoice";
 
 const ISLAM_CATEGORY = muslimKidsPack.categoryId;
 const LEVEL_LABELS = { letters: "Letters", qaida: "Qaida", reading: "Reading", tajweed: "Tajweed" };
@@ -54,11 +55,12 @@ export default function MuslimKidsPanel({ t, onChanged }) {
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState(null);
   const [videoInput, setVideoInput] = useState("");
+  const [extras, setExtras] = useState([]);
   const [alsoChannel, setAlsoChannel] = useState(true);
 
   const profile = profiles.find((item) => item.id === profileId) ?? profiles[0] ?? null;
   const ageGroup = profile?.ageGroup;
-  const suggestions = profile ? suggestionsFor(profile, addedNames, 5) : [];
+  const suggestions = profile ? [...extras, ...suggestionsFor(profile, [...addedNames, ...extras.map((row) => row.name)], 5)] : extras;
 
   const refresh = async () => {
     const [nextProfiles, channels] = await Promise.all([listProfiles(), listCustomChannels()]);
@@ -92,6 +94,13 @@ export default function MuslimKidsPanel({ t, onChanged }) {
         status: "approved",
       });
       await storeUploads(channel, channelId, ageGroup);
+      const next = await nextChannelChoice({
+        ageGroup,
+        language: "en",
+        category: CATEGORIES.EMOTIONAL_INTELLIGENCE,
+        exclude: [...addedNames, channel.name],
+      });
+      if (next) setExtras((current) => [{ name: next.title, query: next.title, channelId: next.channelId }, ...current.filter((row) => row.name !== channel.name)]);
       setNotice({ type: "ok", key: "curator.muslimAdded", params: { name: channel.name } });
       await refresh();
       onChanged?.();
