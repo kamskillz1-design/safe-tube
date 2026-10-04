@@ -2,13 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="manifest.json" />
     <meta name="description" content="SafeTube Kids — a calm, parent-managed, age-adapted video experience for kids." />
     <meta name="theme-color" content="#2c7a7b" />
-    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/icon-512.jpg" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon-512.jpg" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="SafeTube Kids" />
     <title>SafeTube Kids</title>
@@ -23,6 +23,19 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if (location.hostname.endsWith("github.io")) {
+        var style = document.createElement("link");
+        style.rel = "stylesheet";
+        style.href = "assets/index-BsuKgdwa.css";
+        document.head.appendChild(style);
+        var app = document.createElement("script");
+        app.type = "module";
+        app.crossOrigin = "anonymous";
+        app.src = "assets/index-DYbGGA86.js";
+        document.head.appendChild(app);
+      }
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
