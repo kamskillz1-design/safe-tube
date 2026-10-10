@@ -88,6 +88,14 @@ export default function Watch() {
     setSuggested(list);
     chooseSuggested.current = choose || (() => {});
   }, []);
+  const playSuggested = (video) => {
+    if (!video?.id || !profile) return;
+    setQueue((current) => [video, ...current.filter((item) => item.id !== video.id)]);
+    setQueueIndex(0);
+    setPhase("ready");
+    setSuggested((current) => current.filter((item) => item.id !== video.id));
+    if (video.category === ENTERTAINMENT_CATEGORY) spendTokens(video, entertainmentCostFor(profile.ageGroup), profile);
+  };
   const languages = profile?.targetLanguages?.length ? profile.targetLanguages : ["en"];
 
   const buildFrom = async (loaded, videos, language = watchLanguage) => {
@@ -329,7 +337,7 @@ export default function Watch() {
                 <ul className="space-y-2">
                   {suggested.map((video) => (
                     <li key={video.id}>
-                      <button type="button" onClick={() => chooseSuggested.current(video)} className="flex w-full gap-3 rounded-xl bg-accent p-2 text-left hover:bg-accent/80">
+                      <button type="button" onClick={() => playSuggested(video)} className="flex w-full gap-3 rounded-xl bg-accent p-2 text-left hover:bg-accent/80">
                         <img src={video.thumbnail || ""} alt="" className="h-16 w-28 shrink-0 rounded-lg bg-muted object-cover" />
                         <span className="min-w-0">
                           <span className="line-clamp-2 text-sm font-medium">{video.title}</span>
