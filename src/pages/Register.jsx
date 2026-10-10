@@ -34,9 +34,14 @@ export default function Register() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: siteReturn() },
+        options: { emailRedirectTo: siteReturn(), data: { role: "parent" } },
       });
       if (error) throw error;
+      await fetch("/api/parent-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, site: window.location.origin }),
+      }).catch(() => {});
       if (data.session) {
         window.location.href = safeReturnTo();
         return;
@@ -83,7 +88,7 @@ export default function Register() {
 
   if (showOtp) {
     return (
-      <AuthLayout icon={Mail} title="Verify your email" subtitle={`We sent a code to ${email}`}>
+      <AuthLayout icon={Mail} title="Check your email" subtitle={`We sent a confirmation email to ${email}`}>
         {error && <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>}
         <div className="flex justify-center mb-6">
           <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} autoFocus autoComplete="one-time-code">
