@@ -109,7 +109,7 @@ export default function Watch() {
     }
     if (!candidates.length) {
       setQueue([]);
-      setPhase("empty");
+      setPhase("ready");
       return;
     }
     let { queue: built } = makeQueue(candidates, loaded.educationalTokens, loaded.comprehensionScore, loaded.ageGroup);
@@ -147,7 +147,7 @@ export default function Watch() {
         if (!alive) return;
         setLibraryVideos(videos);
         if (!videos.length) {
-          setPhase("empty");
+          setPhase("ready");
           return;
         }
         await buildFrom(loaded, videos, first);
@@ -248,20 +248,6 @@ export default function Watch() {
   };
 
   if (phase === "timelock" && profile) return <ScreenTimeLock returnTo={`/watch/${profileId}`} onParentUnlock={handleParentUnlock} />;
-  if (phase === "empty" && profile) {
-    return (
-      <div className="min-h-screen bg-background">
-        <header className="mx-auto flex max-w-5xl items-center justify-between p-4 sm:p-6">
-          <Link to="/" className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-4 font-medium hover:bg-accent"><ArrowLeft className="h-5 w-5" /> {t("common.profiles")}</Link>
-          <LanguageSwitch languages={languages} value={watchLanguage} onChange={chooseLanguage} />
-        </header>
-        <main className="mx-auto max-w-5xl space-y-4 px-4 pb-12">
-          <PlayerPlaceholder text="Loading safe videos for this category." />
-          <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); }} />
-        </main>
-      </div>
-    );
-  }
   if (["loading", "nokey", "error", "done", "missing"].includes(phase)) {
     return (
       <div className="min-h-screen bg-background">
@@ -274,19 +260,6 @@ export default function Watch() {
   }
   const current = queue[queueIndex];
   const upNext = queue.slice(queueIndex + 1, queueIndex + 4);
-  if (!current) {
-    return (
-      <div className="min-h-screen bg-background">
-        <header className="mx-auto flex max-w-5xl items-center justify-between p-4 sm:p-6">
-          <Link to="/" className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-4 font-medium hover:bg-accent"><ArrowLeft className="h-5 w-5" /> {t("common.profiles")}</Link>
-        </header>
-        <main className="mx-auto max-w-5xl space-y-4 px-4 pb-12">
-          <PlayerPlaceholder text="Loading safe videos for this category." />
-          {profile && <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); }} />}
-        </main>
-      </div>
-    );
-  }
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background pt-safe">
@@ -319,11 +292,11 @@ export default function Watch() {
           }} />
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-4">
-            <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} />
-            <SlipNote video={current} ageGroup={profile.ageGroup} />
+            {current ? <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} /> : <PlayerPlaceholder text="Loading safe videos for this category." />}
+            {current && <SlipNote video={current} ageGroup={profile.ageGroup} />}
             {phase === "softpause" && <SoftPauseScreen line={softPauseLine} onNext={() => setPhase("intermission")} />}
             {phase === "intermission" && <IntermissionScreen ageGroup={profile.ageGroup} endQuestion={learning?.endQuestion} onEndQuestion={handleEndQuestion} onComplete={handleIntermission} />}
-            {phase === "ready" && (
+            {phase === "ready" && current && (
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-accent px-3 py-1 font-semibold text-primary">{t(`category.${current.category}`)}</span>
