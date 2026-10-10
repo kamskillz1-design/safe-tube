@@ -2,6 +2,7 @@ import { applyWhitelistGates } from "@/domain/gates";
 import { defaultTrustedChannels } from "@/app/library";
 import { fetchChannelUploads, resolveChannels } from "@/adapters/youtubeClient";
 import { libraryVideosForAge, putLibraryVideos } from "@/adapters/localDb";
+import { legacyCategoryToId } from "@/domain/categories";
 
 const PAUSE_MS = 12000;
 
@@ -33,7 +34,7 @@ export function startSlowInflow({ ageGroup, language = "en", onVideos }) {
         channelId: video.channelId,
         channelTitle: video.channelTitle || channel.name,
         category: channel.categories?.[0] || "Emotional_Intelligence",
-        categoryId: channel.primaryCategoryId || null,
+        categoryId: channel.primaryCategoryId || legacyCategoryToId(channel.categories?.[0]) || null,
         ageGroup,
         language: (video.language || channel.nativeLanguage || language || "en").slice(0, 2).toLowerCase(),
         durationSeconds: video.durationSeconds,

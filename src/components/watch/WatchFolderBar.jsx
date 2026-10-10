@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { systemCategoryTree } from "@/data/categoryTree";
 import { idToLegacyCategory } from "@/domain/categories";
 import CategoryBrowse, { videosInCategory } from "@/components/CategoryBrowse";
-import { loadCategoryVideos } from "@/app/categoryLoad";
+import { loadCategoryVideos, fillMissingCategories } from "@/app/categoryLoad";
 import { startSlowInflow } from "@/app/inflow";
 import { IQRA_LEVELS, iqraQuery } from "@/content/packs/iqra";
 
@@ -46,6 +46,29 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     setSuggestions(scoped.slice(0, 8));
     if (scoped.length) onFilter(scoped);
   };
+
+  useEffect(() => {
+    if (!group) return undefined;
+    let stopped = false;
+    setNotice("Loading videos for every category. They stay on this device.");
+    fillMissingCategories({
+      ageGroup: group,
+      languages: choices,
+      tree,
+      existing: [...videos, ...extra],
+      onBatch: (rows) => {
+        if (stopped) return;
+        setExtra((current) => unique([...current, ...rows]));
+        setNotice("Videos are loading for the other categories.");
+      },
+      shouldStop: () => stopped,
+    }).then(() => {
+      if (!stopped) setNotice("Every category has been checked.");
+    });
+    return () => { stopped = true; };
+    // Fill once per age and language set. Category clicks still load immediately.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group, choices.join("|")]);
 
   useEffect(() => {
     if (!group) return undefined;

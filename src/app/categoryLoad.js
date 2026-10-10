@@ -47,7 +47,7 @@ const SELF_DEFENSE_QUERY = {
 };
 
 export async function loadCategoryVideos(ageGroup, label, categoryId, languages = ["en"], query) {
-  const faith = /faith|islam|quran|iqra|qaida|tajweed/i.test(`${label} ${query || ""}`);
+  const faith = /faith|islam|quran|iqra|qaida|tajweed/i.test(`${label} ${query || ""} ${categoryId || ""}`);
   const selfDefense = /self.?defense/i.test(`${label} ${categoryId}`);
   const base = query || (selfDefense ? SELF_DEFENSE_QUERY[ageGroup] || SELF_DEFENSE_QUERY.tween_8_12 : faith ? "Quran lessons for kids" : `${label} for kids`);
   const codes = [...new Set((languages.length ? languages : ["en"]).map((code) => String(code).slice(0, 2).toLowerCase()))].slice(0, 1);
@@ -68,4 +68,28 @@ export async function loadCategoryVideos(ageGroup, label, categoryId, languages 
   }
   const matched = saved.filter((video) => !video.languageFallback);
   return (matched.length ? matched : saved).slice(0, KEEP);
+}
+
+
+export async function fillMissingCategories({ ageGroup, languages = ["en"], tree = [], existing = [], onBatch, shouldStop }) {
+  const codes = [...new Set((languages.length ? languages : ["en"]).map((code) => String(code).slice(0, 2).toLowerCase()))];
+  const targets = tree.filter((node) => !node.hidden && (!node.parentId || node.parentId === "cat_faith" || node.parentId === "cat_iqra"));
+  const seen = [...existing];
+  for (const node of targets) {
+    for (const language of codes) {
+      if (shouldStop?.()) return;
+      const have = seen.filter((video) => video.categoryId === node.id && (video.language || "en") === language && !video.languageFallback);
+      if (have.length >= 4) continue;
+      try {
+        const batch = await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, [language]);
+        if (batch.length) {
+          seen.push(...batch);
+          onBatch?.(batch);
+        }
+      } catch {
+        // A quota miss skips this category. The next visit tries it again.
+      }
+      await sleep(500);
+    }
+  }
 }
