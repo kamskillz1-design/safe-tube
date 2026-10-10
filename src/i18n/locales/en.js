@@ -206,6 +206,7 @@ export default {
   "category.Nature_Animals": "Nature & Animals",
   "category.Life_Skills": "Life Skills",
   "category.Health_Movement": "Health & Movement",
+  "category.Self_Defense": "Self-Defense",
   "category.Music_Dance": "Music & Dance",
   "category.World_Cultures": "World & Cultures",
   "category.History": "History",

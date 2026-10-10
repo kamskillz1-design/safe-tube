@@ -22,7 +22,8 @@ const TOPICS = [
   { category: CATEGORIES.SPORTS_GAMES, label: "Sports", ages: fromEarly, q: "sports for kids" },
   { category: CATEGORIES.ENVIRONMENTAL_AWARENESS, label: "Nature care", ages: all, q: "environment for kids" },
   { category: CATEGORIES.HEALTH_MOVEMENT, label: "Exercise", ages: all, kind: "exercise", q: "exercise for kids" },
-  { category: CATEGORIES.HEALTH_MOVEMENT, label: "Self-defense", ages: older, kind: "defense", q: "self defense for teenagers" },
+  { category: CATEGORIES.SELF_DEFENSE, label: "Self-defense", ages: older, kind: "defense", q: "self defense basics for teenagers awareness" },
+  { category: CATEGORIES.SELF_DEFENSE, label: "Body safety", ages: [AGE_GROUPS.TODDLER, AGE_GROUPS.EARLY_LEARNER], kind: "defense", q: "body safety for kids" },
 ];
 
 const LANG = {
@@ -48,8 +49,8 @@ export function exerciseSuggestions(ageGroup) {
     { name: "Move and play", query: "kids exercise play", ages: [AGE_GROUPS.TODDLER, AGE_GROUPS.EARLY_LEARNER], kind: "exercise" },
     { name: "Kids workout", query: "kids workout at home", ages: [AGE_GROUPS.EARLY_LEARNER, AGE_GROUPS.TWEEN], kind: "exercise" },
     { name: "Teen fitness", query: "teen home workout no equipment", ages: [AGE_GROUPS.TWEEN, AGE_GROUPS.TEEN], kind: "exercise" },
-    { name: "Body safety", query: "body safety for kids", ages: [AGE_GROUPS.EARLY_LEARNER, AGE_GROUPS.TWEEN], kind: "defense" },
-    { name: "Self-defense basics", query: "self defense basics for teenagers", ages: [AGE_GROUPS.TWEEN, AGE_GROUPS.TEEN], kind: "defense" },
+    { name: "Body safety", query: "body safety for kids", ages: [AGE_GROUPS.TODDLER, AGE_GROUPS.EARLY_LEARNER], kind: "defense" },
+    { name: "Self-defense basics", query: "self defense basics for teenagers awareness", ages: [AGE_GROUPS.TWEEN, AGE_GROUPS.TEEN], kind: "defense" },
   ];
   return rows.filter((row) => row.ages.includes(ageGroup)).map((row) => ({ ...row, language: "en", category: CATEGORIES.HEALTH_MOVEMENT, ageGroup }));
 }

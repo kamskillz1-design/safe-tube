@@ -40,6 +40,7 @@ export const LEGACY_CATEGORY_TO_ID = {
   [CATEGORIES.COOKING_FOOD]: "cat_cooking_food",
   [CATEGORIES.SPORTS_GAMES]: "cat_sports_games",
   [CATEGORIES.ENVIRONMENTAL_AWARENESS]: "cat_environmental_awareness",
+  [CATEGORIES.SELF_DEFENSE]: "cat_self_defense",
   [CATEGORIES.WHOLESOME_ENTERTAINMENT]: "cat_wholesome_entertainment",
 };
 
@@ -61,6 +62,7 @@ export function systemCategoryTree() {
     subject(CATEGORIES.NATURE_ANIMALS, "category.Nature_Animals", 50),
     subject(CATEGORIES.LIFE_SKILLS, "category.Life_Skills", 60),
     subject(CATEGORIES.HEALTH_MOVEMENT, "category.Health_Movement", 70),
+    subject(CATEGORIES.SELF_DEFENSE, "category.Self_Defense", 75),
     subject(CATEGORIES.HISTORY, "category.History", 90),
     subject(CATEGORIES.GEOGRAPHY, "category.Geography", 100),
     subject(CATEGORIES.CODING_TECHNOLOGY, "category.Coding_Technology", 110),
