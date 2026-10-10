@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { systemCategoryTree } from "@/data/categoryTree";
 import { idToLegacyCategory } from "@/domain/categories";
 import CategoryBrowse, { videosInCategory } from "@/components/CategoryBrowse";
@@ -29,7 +29,7 @@ function forLanguage(videos, language) {
   return videos.filter((video) => video.languageFallback || (video.language || "en") === "en");
 }
 
-export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], readingLevel = "letters", onFilter, t }) {
+export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], readingLevel = "letters", onFilter, t, hideSuggestions = false, onSuggestionsChange }) {
   const [tree] = useState(() => systemCategoryTree().filter((node) => !node.hidden));
   const [selectedId, setSelectedId] = useState(() => readJson(memoryKey(ageGroup), {}).categoryId || null);
   const [extra, setExtra] = useState([]);
@@ -104,6 +104,11 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     localStorage.setItem(seenKey(group), JSON.stringify([video.id, ...seen].slice(0, 40)));
     remember(selectedId, instruction, [video, ...suggestions.filter((item) => item.id !== video.id)]);
   };
+  const chooseRef = useRef(chooseSuggestion);
+  chooseRef.current = chooseSuggestion;
+  useEffect(() => {
+    onSuggestionsChange?.(suggestions, (video) => chooseRef.current?.(video));
+  }, [suggestions, onSuggestionsChange]);
 
   return (
     <div className="space-y-2">
@@ -117,7 +122,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
         </label>
       )}
       <p className="text-sm text-muted-foreground">{notice}</p>
-      {suggestions.length > 0 && (
+      {!hideSuggestions && suggestions.length > 0 && (
         <div className="flex gap-3 overflow-x-auto pb-1">
           {suggestions.map((video) => (
             <button key={video.id} type="button" onClick={() => chooseSuggestion(video)} className="w-44 shrink-0 rounded-xl bg-accent p-2 text-left hover:bg-accent/80">

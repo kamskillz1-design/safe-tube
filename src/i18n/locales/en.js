@@ -41,6 +41,7 @@ export default {
   "player.volume": "Volume",
   "player.mute": "Mute",
   "player.upNext": "Up next",
+  "player.suggested": "Suggested",
   "player.fullscreen": "Fullscreen",
   "player.skip": "Skip video",
   "player.queueDone": "That's the queue for now.",

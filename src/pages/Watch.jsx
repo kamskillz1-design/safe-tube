@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Coins, Tv, Loader2, ShieldCheck, SkipForward, ListMusic } from "lucide-react";
 import { EDUCATIONAL_CATEGORIES, ENTERTAINMENT_CATEGORY, TOKEN_RULES, entertainmentCostFor } from "@/domain/constants";
@@ -82,6 +82,12 @@ export default function Watch() {
   const sessionRef = useRef(null);
   const secondsRef = useRef(0);
   const profileRef = useRef(null);
+  const [suggested, setSuggested] = useState([]);
+  const chooseSuggested = useRef(() => {});
+  const handleSuggestions = useCallback((list, choose) => {
+    setSuggested(list);
+    chooseSuggested.current = choose || (() => {});
+  }, []);
   const languages = profile?.targetLanguages?.length ? profile.targetLanguages : ["en"];
 
   const buildFrom = async (loaded, videos, language = watchLanguage) => {
@@ -291,38 +297,52 @@ export default function Watch() {
           </div>
         </div>
       </header>
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1fr_280px]">
-        <div className="min-w-0 space-y-4">
-          <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (!filtered.length) return; const loaded = profileRef.current; if (loaded) buildFrom(loaded, filtered); }} />
-          <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} />
-          <SlipNote video={current} ageGroup={profile.ageGroup} />
-          {phase === "softpause" && <SoftPauseScreen line={softPauseLine} onNext={() => setPhase("intermission")} />}
-          {phase === "intermission" && <IntermissionScreen ageGroup={profile.ageGroup} endQuestion={learning?.endQuestion} onEndQuestion={handleEndQuestion} onComplete={handleIntermission} />}
-          {phase === "ready" && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-accent px-3 py-1 font-semibold text-primary">{t(`category.${current.category}`)}</span>
-                <span className="rounded-full bg-muted px-3 py-1 font-semibold">{durationLabel(current)}</span>
-                {current.category === ENTERTAINMENT_CATEGORY && <span>{t("watch.funUnlocked")}</span>}
+      <main className="mx-auto max-w-6xl space-y-4 px-4 pb-12 sm:px-6">
+        <WatchFolderBar hideSuggestions onSuggestionsChange={handleSuggestions} videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (!filtered.length) return; const loaded = profileRef.current; if (loaded) buildFrom(loaded, filtered); }} />
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0 space-y-4">
+            <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} />
+            <SlipNote video={current} ageGroup={profile.ageGroup} />
+            {phase === "softpause" && <SoftPauseScreen line={softPauseLine} onNext={() => setPhase("intermission")} />}
+            {phase === "intermission" && <IntermissionScreen ageGroup={profile.ageGroup} endQuestion={learning?.endQuestion} onEndQuestion={handleEndQuestion} onComplete={handleIntermission} />}
+            {phase === "ready" && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-accent px-3 py-1 font-semibold text-primary">{t(`category.${current.category}`)}</span>
+                  <span className="rounded-full bg-muted px-3 py-1 font-semibold">{durationLabel(current)}</span>
+                  {current.category === ENTERTAINMENT_CATEGORY && <span>{t("watch.funUnlocked")}</span>}
+                </div>
+                <button type="button" onClick={handleSkip} aria-label={t("player.skip")} className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-5 font-heading text-base font-bold hover:bg-accent"><SkipForward className="h-5 w-5" /> {t("player.skip")}</button>
               </div>
-              <button type="button" onClick={handleSkip} aria-label={t("player.skip")} className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-5 font-heading text-base font-bold hover:bg-accent"><SkipForward className="h-5 w-5" /> {t("player.skip")}</button>
+            )}
+            <div className="space-y-3">
+              <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground"><ListMusic className="h-4 w-4" /> {t("player.upNext")}</p>
+              {upNext.length === 0 ? <p className="text-sm text-muted-foreground">{t("player.queueDone")}</p> : <ul className="space-y-2">{upNext.map((video) => <li key={video.id} className="rounded-xl bg-accent p-3 text-sm"><p className="line-clamp-2 font-medium">{video.title}</p><p className="text-xs text-muted-foreground">{t(`category.${video.category}`)} · {durationLabel(video)}</p></li>)}</ul>}
             </div>
-          )}
-          {phase === "ready" && <VocabularyPanel items={learning?.vocabulary} />}
-          {phase === "ready" && upNext.length > 0 && (
-            <div className="mt-4 space-y-2 lg:hidden">
-              <p className="text-sm font-semibold text-muted-foreground">{t("player.upNext")}</p>
-              <ul className="space-y-2">{upNext.map((video) => <li key={video.id} className="rounded-xl bg-accent p-3 text-sm"><p className="line-clamp-2 font-medium">{video.title}</p><p className="text-xs text-muted-foreground">{t(`category.${video.category}`)} · {durationLabel(video)}</p></li>)}</ul>
-            </div>
-          )}
-        </div>
-        <aside className="hidden flex-col gap-4 rounded-3xl border border-border bg-card p-5 lg:flex">
-          <div className="flex items-center gap-3"><Coins className="h-6 w-6 shrink-0 text-primary" /><p className="font-heading text-lg font-bold">{t("profile.tokens", { count: profile.educationalTokens })}</p></div>
-          <div className="space-y-3">
-            <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground"><ListMusic className="h-4 w-4" /> {t("player.upNext")}</p>
-            {upNext.length === 0 ? <p className="text-sm text-muted-foreground">{t("player.queueDone")}</p> : <ul className="space-y-2">{upNext.map((video) => <li key={video.id} className="rounded-xl bg-accent p-3 text-sm"><p className="line-clamp-2 font-medium">{video.title}</p><p className="text-xs text-muted-foreground">{t(`category.${video.category}`)} · {durationLabel(video)}</p></li>)}</ul>}
+            {phase === "ready" && <VocabularyPanel items={learning?.vocabulary} />}
           </div>
-        </aside>
+          <aside className="space-y-3 lg:sticky lg:top-24">
+            <div className="flex items-center gap-3 rounded-3xl border border-border bg-card p-4"><Coins className="h-6 w-6 shrink-0 text-primary" /><p className="font-heading text-lg font-bold">{t("profile.tokens", { count: profile.educationalTokens })}</p></div>
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-muted-foreground">{t("player.suggested")}</p>
+              {suggested.length === 0 ? <p className="text-sm text-muted-foreground">{t("player.queueDone")}</p> : (
+                <ul className="space-y-2">
+                  {suggested.map((video) => (
+                    <li key={video.id}>
+                      <button type="button" onClick={() => chooseSuggested.current(video)} className="flex w-full gap-3 rounded-xl bg-accent p-2 text-left hover:bg-accent/80">
+                        <img src={video.thumbnail || ""} alt="" className="h-16 w-28 shrink-0 rounded-lg bg-muted object-cover" />
+                        <span className="min-w-0">
+                          <span className="line-clamp-2 text-sm font-medium">{video.title}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">{video.channelTitle || t(`category.${video.category}`)}</span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </aside>
+        </div>
       </main>
     </div>
   );
