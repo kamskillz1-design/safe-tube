@@ -16,6 +16,7 @@ import { searchVideos } from "@/adapters/youtubeClient";
 import { putLibraryVideos } from "@/adapters/localDb";
 import { applyWhitelistGates } from "@/domain/gates";
 import { safeQuery } from "@/domain/safety";
+import { loadCategoryVideos } from "@/app/categoryLoad";
 
 const allowed = (videos) => videos.filter((video) => video.category !== "Music_Dance");
 
@@ -73,12 +74,20 @@ export async function loadFeed(profile) {
     const firstRun = await ensureLibraryVideos(profile);
     videos = allowed(await getLibraryVideosForProfile(profile));
     if (!videos.length) {
-      try {
-        await seedStarterVideos(profile);
-      } catch (error) {
-        if (!firstRun.ok) throw error;
+      const language = profile.targetLanguages?.[0] || "en";
+      const starters = [
+        ["STEM", "cat_stem"],
+        ["Nature_Animals", "cat_nature_animals"],
+        ["Literacy_Language", "cat_literacy_language"],
+        ["Sports_Games", "cat_sports_games"],
+      ];
+      for (const [label, categoryId] of starters) {
+        try { await loadCategoryVideos(profile.ageGroup, label, categoryId, [language]); } catch (error) {
+          if (!firstRun.ok && error instanceof YoutubeApiError) throw error;
+        }
+        videos = allowed(await getLibraryVideosForProfile(profile));
+        if (videos.length) break;
       }
-      videos = allowed(await getLibraryVideosForProfile(profile));
     }
   } else {
     maybeAutoRefresh();
