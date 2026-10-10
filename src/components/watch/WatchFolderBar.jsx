@@ -32,6 +32,10 @@ function forLanguage(videos, language) {
 export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], readingLevel = "letters", onFilter, t, hideSuggestions = false, onSuggestionsChange }) {
   const [tree] = useState(() => systemCategoryTree().filter((node) => !node.hidden));
   const [selectedId, setSelectedId] = useState(null);
+  useEffect(() => {
+    localStorage.removeItem(memoryKey(ageGroup));
+    setSelectedId(null);
+  }, [ageGroup]);
   const [extra, setExtra] = useState([]);
   const [notice, setNotice] = useState("Videos for this category will load over time.");
   const [instruction, setInstruction] = useState(() => readJson(memoryKey(ageGroup), {}).language || languages[0] || "en");

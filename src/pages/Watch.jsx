@@ -137,6 +137,7 @@ export default function Watch() {
       }
       setProfile(loaded);
       profileRef.current = loaded;
+      localStorage.removeItem(`safe-tube-choice:${loaded.ageGroup}`);
       const first = loaded.targetLanguages?.[0] || "en";
       setWatchLanguage(first);
       const session = await getTodaySession(profileId);
@@ -292,7 +293,7 @@ export default function Watch() {
           }} />
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-4">
-            {current ? <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} /> : <PlayerPlaceholder text="Loading safe videos for this category." />}
+            {current ? <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} /> : <PlayerPlaceholder text="Loading safe videos." />}
             {current && <SlipNote video={current} ageGroup={profile.ageGroup} />}
             {phase === "softpause" && <SoftPauseScreen line={softPauseLine} onNext={() => setPhase("intermission")} />}
             {phase === "intermission" && <IntermissionScreen ageGroup={profile.ageGroup} endQuestion={learning?.endQuestion} onEndQuestion={handleEndQuestion} onComplete={handleIntermission} />}
