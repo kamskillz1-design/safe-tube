@@ -31,13 +31,15 @@ async function seedStarterVideos(profile) {
     const pool = gated.length ? gated : found.filter((video) => video.durationSeconds > 0 && video.durationSeconds <= 1800);
     if (!pool.length) continue;
     const now = new Date().toISOString();
+    const folder = query.includes("science") ? ["STEM", "cat_stem"] : query.includes("animals") ? ["Nature_Animals", "cat_nature_animals"] : query.includes("stories") ? ["Literacy_Language", "cat_literacy_language"] : ["STEM", "cat_stem"];
     const rows = pool.slice(0, 4).map((video) => ({
       id: video.id,
       title: video.title,
       description: video.description,
       channelId: video.channelId,
       channelTitle: video.channelTitle,
-      category: "STEM",
+      category: folder[0],
+      categoryId: folder[1],
       ageGroup: profile.ageGroup,
       language: (video.language || language || "en").slice(0, 2).toLowerCase() || "en",
       durationSeconds: video.durationSeconds,

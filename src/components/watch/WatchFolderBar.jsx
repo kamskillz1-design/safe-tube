@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { systemCategoryTree } from "@/data/categoryTree";
 import { idToLegacyCategory } from "@/domain/categories";
 import CategoryBrowse, { videosInCategory } from "@/components/CategoryBrowse";
-import { loadCategoryVideos, fillMissingCategories } from "@/app/categoryLoad";
+import { loadCategoryVideos, startCategoryFill } from "@/app/categoryLoad";
 import { startSlowInflow } from "@/app/inflow";
 import { IQRA_LEVELS, iqraQuery } from "@/content/packs/iqra";
 
@@ -47,26 +47,28 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     if (scoped.length) onFilter(scoped);
   };
 
+  const videosRef = useRef(videos);
+  const extraRef = useRef(extra);
+  videosRef.current = videos;
+  extraRef.current = extra;
+
   useEffect(() => {
     if (!group) return undefined;
     let stopped = false;
-    setNotice("Loading videos for every category. They stay on this device.");
-    fillMissingCategories({
+    setNotice("Loading videos for every category.");
+    const stop = startCategoryFill({
       ageGroup: group,
       languages: choices,
       tree,
-      existing: [...videos, ...extra],
+      getExisting: () => [...videosRef.current, ...extraRef.current],
       onBatch: (rows) => {
         if (stopped) return;
         setExtra((current) => unique([...current, ...rows]));
-        setNotice("Videos are loading for the other categories.");
+        setNotice("New videos are arriving in the background.");
       },
       shouldStop: () => stopped,
-    }).then(() => {
-      if (!stopped) setNotice("Every category has been checked.");
     });
-    return () => { stopped = true; };
-    // Fill once per age and language set. Category clicks still load immediately.
+    return () => { stopped = true; stop?.(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group, choices.join("|")]);
 
@@ -84,14 +86,10 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     });
   }, [group, instruction, selectedId, tree]);
 
-  const playedCategory = useRef(null);
   useEffect(() => {
     const filtered = forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction);
     setSuggestions(filtered.length ? shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 8) : []);
-    if (!selectedId || !filtered.length) return;
-    if (playedCategory.current === selectedId) return;
-    playedCategory.current = selectedId;
-    onFilter(filtered);
+    if (selectedId) onFilter(filtered);
   }, [selectedId, videos, tree, extra, group, instruction]);
 
   const select = async (id, level = readingLevel, language = instruction) => {
@@ -104,13 +102,9 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     localStorage.setItem(memoryKey(group), JSON.stringify({ categoryId: id, language }));
     setNotice(`${language.toUpperCase()} videos will load over time.`);
     setSuggestions([]);
-    playedCategory.current = null;
     const existing = shuffleFresh(forLanguage(videosInCategory([...videos, ...extra], tree, id), language), readJson(seenKey(group), []));
     onFilter(existing);
-    if (existing.length) {
-      playedCategory.current = id;
-      setSuggestions(existing.slice(0, 8));
-    }
+    if (existing.length) setSuggestions(existing.slice(0, 8));
     try {
       const targets = id ? [node].filter(Boolean) : tree.filter((item) => !item.parentId && !item.hidden).slice(0, 4);
       let loaded = [];
