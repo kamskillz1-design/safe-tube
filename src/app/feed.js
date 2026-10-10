@@ -56,8 +56,18 @@ async function seedStarterVideos(profile) {
   return saved.length;
 }
 
+async function importServerCatalog(ageGroup) {
+  const response = await fetch(`/api/catalog?ageGroup=${encodeURIComponent(ageGroup)}`);
+  const data = await response.json().catch(() => null);
+  if (!data?.ok || !data.videos?.length) return 0;
+  const now = new Date().toISOString();
+  await putLibraryVideos(data.videos.map((video) => ({ ...video, ageGroup, approved: true, addedAt: now, sourceChannelId: video.channelId || "" })));
+  return data.videos.length;
+}
+
 export async function loadFeed(profile) {
   await importApprovedDiscovery(profile.ageGroup);
+  try { await importServerCatalog(profile.ageGroup); } catch { /* The local library still works if the shared catalog is offline. */ }
   let videos = allowed(await getLibraryVideosForProfile(profile));
   if (!videos.length) {
     const firstRun = await ensureLibraryVideos(profile);

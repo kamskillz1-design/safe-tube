@@ -1,12 +1,28 @@
 const API_BASE = "https://www.googleapis.com/youtube/v3";
-const BLOCKED = ["weapon", "gun", "prank", "scary", "horror", "music video", "dance"];
-const JOBS = [
-  { ageGroup: "toddler", language: "en", term: "calm learning for toddlers", categoryId: "cat_learning" },
-  { ageGroup: "preschool", language: "en", term: "preschool science for kids", categoryId: "cat_stem" },
-  { ageGroup: "tween", language: "en", term: "health and movement for kids", categoryId: "cat_health" },
-  { ageGroup: "teen", language: "en", term: "coding for teens", categoryId: "cat_coding" },
-  { ageGroup: "tween", language: "ur", term: "قاعدہ اردو بچوں", categoryId: "cat_iqra" },
-  { ageGroup: "tween", language: "ar", term: "تعليم القرآن للأطفال", categoryId: "cat_iqra" },
+const BLOCKED = ["weapon", "gun", "knife", "prank", "scary", "horror", "blood", "fight", "kill"];
+const AGES = ["toddler_2_4", "early_learner_5_7", "tween_8_12", "teen_13_16"];
+const CATEGORIES = [
+  ["cat_stem", "STEM", "science for kids"],
+  ["cat_arts", "Arts", "art lessons for kids"],
+  ["cat_emotional_intelligence", "Emotional_Intelligence", "feelings for kids"],
+  ["cat_literacy_language", "Literacy_Language", "reading for kids"],
+  ["cat_nature_animals", "Nature_Animals", "animals for kids"],
+  ["cat_life_skills", "Life_Skills", "life skills for kids"],
+  ["cat_health_movement", "Health_Movement", "exercise for kids"],
+  ["cat_self_defense", "Self_Defense", "body safety for kids"],
+  ["cat_history", "History", "history for kids"],
+  ["cat_geography", "Geography", "geography for kids"],
+  ["cat_coding_technology", "Coding_Technology", "coding for kids"],
+  ["cat_ai", "AI", "artificial intelligence for kids"],
+  ["cat_film_making", "Film_Making", "film making for kids"],
+  ["cat_digital_skills", "Digital_Skills", "computer skills for kids"],
+  ["cat_cooking_food", "Cooking_Food", "cooking for kids"],
+  ["cat_sports_games", "Sports_Games", "sports for kids"],
+  ["cat_environmental_awareness", "Environmental_Awareness", "environment for kids"],
+  ["cat_world_cultures", "World_Cultures", "world cultures for kids"],
+  ["cat_wholesome_entertainment", "Wholesome_Entertainment", "funny stories for kids"],
+  ["cat_faith", "Faith_Values", "kindness and values for kids"],
+  ["cat_iqra", "IQRA", "Quran for kids"],
 ];
 
 function plain(value, max) {
@@ -16,6 +32,12 @@ function plain(value, max) {
 function allowed(title) {
   const text = title.toLowerCase();
   return !BLOCKED.some((word) => text.includes(word));
+}
+
+function jobs() {
+  return AGES.flatMap((ageGroup) =>
+    CATEGORIES.map(([categoryId, category, term]) => ({ ageGroup, categoryId, category, term, language: "en" }))
+  );
 }
 
 async function yt(path, params, apiKey) {
@@ -38,20 +60,40 @@ export default async function handler(req, res) {
   if (!apiKey || !supabaseUrl || !serviceKey) {
     return res.status(503).json({ ok: false, error: "Missing YouTube key or Supabase service role." });
   }
-  const day = new Date().getUTCDate();
-  const job = JOBS[day % JOBS.length];
-  const search = await yt("/search", { part: "snippet", q: job.term, type: "video", maxResults: 5, relevanceLanguage: job.language, safeSearch: "strict", videoEmbeddable: true }, apiKey);
-  const rows = (search.items || []).filter((item) => allowed(item.snippet?.title || "")).map((item) => ({
-    id: item.id?.videoId,
-    title: plain(item.snippet?.title, 140),
-    channel_title: plain(item.snippet?.channelTitle, 80),
-    category_id: job.categoryId,
-    age_group: job.ageGroup,
-    language: job.language,
-    thumbnail: item.snippet?.thumbnails?.medium?.url || "",
-    approved: true,
-  })).filter((row) => row.id);
-  if (!rows.length) return res.status(200).json({ ok: true, added: 0, job });
+
+  const all = jobs();
+  const batchSize = 12;
+  const start = (new Date().getUTCDate() + new Date().getUTCHours()) % all.length;
+  const batch = Array.from({ length: batchSize }, (_, index) => all[(start + index) % all.length]);
+  const rows = [];
+  for (const job of batch) {
+    const search = await yt("/search", {
+      part: "snippet",
+      q: job.ageGroup === "toddler_2_4" ? `${job.term} toddlers` : job.term,
+      type: "video",
+      maxResults: 5,
+      relevanceLanguage: job.language,
+      safeSearch: "strict",
+      videoEmbeddable: true,
+    }, apiKey);
+    for (const item of search.items || []) {
+      const title = item.snippet?.title || "";
+      const id = item.id?.videoId;
+      if (!id || !allowed(title)) continue;
+      rows.push({
+        id,
+        title: plain(title, 140),
+        channel_title: plain(item.snippet?.channelTitle, 80),
+        category_id: job.categoryId,
+        category: job.category,
+        age_group: job.ageGroup,
+        language: job.language,
+        thumbnail: item.snippet?.thumbnails?.medium?.url || "",
+        approved: true,
+      });
+    }
+  }
+  if (!rows.length) return res.status(200).json({ ok: true, added: 0, checked: batch.length });
   const saved = await fetch(`${supabaseUrl}/rest/v1/catalog_videos`, {
     method: "POST",
     headers: {
@@ -62,6 +104,9 @@ export default async function handler(req, res) {
     },
     body: JSON.stringify(rows),
   });
-  if (!saved.ok) return res.status(500).json({ ok: false, error: "Catalog save failed." });
-  return res.status(200).json({ ok: true, added: rows.length, job });
+  if (!saved.ok) {
+    const error = await saved.text();
+    return res.status(500).json({ ok: false, error: "Catalog save failed.", detail: error.slice(0, 300) });
+  }
+  return res.status(200).json({ ok: true, added: rows.length, checked: batch.length });
 }
