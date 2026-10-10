@@ -24,7 +24,7 @@ export default {
   "watch.nokeyText": "Live YouTube videos start as soon as a parent connects the app to YouTube. Ask a grown-up to open Settings.",
   "watch.openSettings": "Parents: open settings",
   "watch.emptyTitle": "Nothing to watch yet",
-  "watch.emptyText": "No videos passed the safety gates for this profile right now. A parent can add channels in Settings.",
+  "watch.emptyText": "Safe videos are still loading for this profile. Stay on this page, or pick a category.",
   "watch.errorTitle": "Oops, something went wrong",
   "watch.errorText": "We couldn't load videos right now. Please try again in a little while.",
   "watch.doneTitle": "All caught up!",

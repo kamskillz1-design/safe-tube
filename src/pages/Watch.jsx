@@ -256,8 +256,8 @@ export default function Watch() {
           <LanguageSwitch languages={languages} value={watchLanguage} onChange={chooseLanguage} />
         </header>
         <main className="mx-auto max-w-5xl space-y-4 px-4 pb-12">
-          <PlayerPlaceholder text={t("watch.emptyText")} />
-          <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); else { setQueue([]); setQueueIndex(0); } }} />
+          <PlayerPlaceholder text="Loading safe videos for this category." />
+          <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); }} />
         </main>
       </div>
     );
@@ -281,8 +281,8 @@ export default function Watch() {
           <Link to="/" className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-4 font-medium hover:bg-accent"><ArrowLeft className="h-5 w-5" /> {t("common.profiles")}</Link>
         </header>
         <main className="mx-auto max-w-5xl space-y-4 px-4 pb-12">
-          <PlayerPlaceholder text={t("watch.emptyText")} />
-          {profile && <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); else { setQueue([]); setQueueIndex(0); } }} />}
+          <PlayerPlaceholder text="Loading safe videos for this category." />
+          {profile && <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); }} />}
         </main>
       </div>
     );
@@ -309,11 +309,7 @@ export default function Watch() {
         <WatchFolderBar hideSuggestions onSuggestionsChange={handleSuggestions} videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => {
             const loaded = profileRef.current;
             if (!loaded) return;
-            if (!filtered.length) {
-              setQueue([]);
-              setQueueIndex(0);
-              return;
-            }
+            if (!filtered.length) return;
             const playing = queue[queueIndex];
             if (playing && filtered.some((video) => video.id === playing.id)) return;
             buildFrom(loaded, filtered);

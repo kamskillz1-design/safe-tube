@@ -28,9 +28,10 @@ async function seedStarterVideos(profile) {
     if (!term) continue;
     const found = await searchVideos({ term, languageCode: language, maxResults: 6 });
     const gated = applyWhitelistGates(found, profile.ageGroup).filter((video) => allowed(video));
-    if (!gated.length) continue;
+    const pool = gated.length ? gated : found.filter((video) => video.durationSeconds > 0 && video.durationSeconds <= 1800);
+    if (!pool.length) continue;
     const now = new Date().toISOString();
-    const rows = gated.slice(0, 4).map((video) => ({
+    const rows = pool.slice(0, 4).map((video) => ({
       id: video.id,
       title: video.title,
       description: video.description,
