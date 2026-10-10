@@ -89,7 +89,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   useEffect(() => {
     const filtered = forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction);
     setSuggestions(filtered.length ? shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 8) : []);
-    if (selectedId) onFilter(filtered);
+    if (filtered.length) onFilter(filtered);
   }, [selectedId, videos, tree, extra, group, instruction]);
 
   const select = async (id, level = readingLevel, language = instruction) => {
