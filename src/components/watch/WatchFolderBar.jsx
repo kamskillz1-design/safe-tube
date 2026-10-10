@@ -86,8 +86,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
 
   useEffect(() => {
     const filtered = forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction);
-    if (!filtered.length) return;
-    setSuggestions(shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 8));
+    setSuggestions(filtered.length ? shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 8) : []);
   }, [selectedId, videos, tree, extra, group, instruction]);
 
   const select = async (id, level = readingLevel, language = instruction) => {
@@ -99,8 +98,10 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     const step = id?.replace("cat_iqra_", "") || level;
     localStorage.setItem(memoryKey(group), JSON.stringify({ categoryId: id, language }));
     setNotice(`${language.toUpperCase()} videos will load over time.`);
+    setSuggestions([]);
     const existing = shuffleFresh(forLanguage(videosInCategory([...videos, ...extra], tree, id), language), readJson(seenKey(group), []));
-    if (existing.length) remember(id, language, existing);
+    onFilter(existing);
+    if (existing.length) setSuggestions(existing.slice(0, 8));
     try {
       const targets = id ? [node].filter(Boolean) : tree.filter((item) => !item.parentId && !item.hidden).slice(0, 4);
       let loaded = [];

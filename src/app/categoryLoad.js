@@ -1,6 +1,6 @@
 import { applyWhitelistGates, passesKeywordBlocker } from "@/domain/gates";
 import { searchVideos } from "@/adapters/youtubeClient";
-import { putLibraryVideos } from "@/adapters/localDb";
+import { libraryVideosForAge, putLibraryVideos } from "@/adapters/localDb";
 import { safeQuery } from "@/domain/safety";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -60,7 +60,8 @@ export async function loadCategoryVideos(ageGroup, label, categoryId, languages 
       if (saved.filter((video) => !video.languageFallback).length >= KEEP) break;
       await sleep(800);
       const found = await searchVideos({ term, languageCode: language, maxResults: 12 });
-      const rows = toRows(found, ageGroup, language, categoryId, faith, selfDefense ? "Self_Defense" : label).filter((video) => !seen.has(video.id));
+      const stored = new Set((await libraryVideosForAge(ageGroup)).map((video) => video.id));
+      const rows = toRows(found, ageGroup, language, categoryId, faith, selfDefense ? "Self_Defense" : label).filter((video) => !seen.has(video.id) && !stored.has(video.id));
       rows.forEach((video) => seen.add(video.id));
       if (rows.length) await putLibraryVideos(rows);
       saved.push(...rows);
@@ -81,7 +82,8 @@ export async function fillMissingCategories({ ageGroup, languages = ["en"], tree
       const have = seen.filter((video) => video.categoryId === node.id && (video.language || "en") === language && !video.languageFallback);
       if (have.length >= 4) continue;
       try {
-        const batch = await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, [language]);
+        const taken = new Set(seen.map((video) => video.id));
+        const batch = (await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, [language])).filter((video) => !taken.has(video.id));
         if (batch.length) {
           seen.push(...batch);
           onBatch?.(batch);

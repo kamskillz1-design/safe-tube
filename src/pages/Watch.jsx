@@ -257,7 +257,7 @@ export default function Watch() {
         </header>
         <main className="mx-auto max-w-5xl space-y-4 px-4 pb-12">
           <PlayerPlaceholder text={t("watch.emptyText")} />
-          <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); }} />
+          <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); else { setQueue([]); setQueueIndex(0); } }} />
         </main>
       </div>
     );
@@ -282,7 +282,7 @@ export default function Watch() {
         </header>
         <main className="mx-auto max-w-5xl space-y-4 px-4 pb-12">
           <PlayerPlaceholder text={t("watch.emptyText")} />
-          {profile && <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); }} />}
+          {profile && <WatchFolderBar videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (filtered.length) buildFrom(profile, filtered); else { setQueue([]); setQueueIndex(0); } }} />}
         </main>
       </div>
     );
@@ -306,7 +306,18 @@ export default function Watch() {
         </div>
       </header>
       <main className="mx-auto max-w-6xl space-y-4 px-4 pb-12 sm:px-6">
-        <WatchFolderBar hideSuggestions onSuggestionsChange={handleSuggestions} videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => { if (!filtered.length) return; const loaded = profileRef.current; if (loaded) buildFrom(loaded, filtered); }} />
+        <WatchFolderBar hideSuggestions onSuggestionsChange={handleSuggestions} videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => {
+            const loaded = profileRef.current;
+            if (!loaded) return;
+            if (!filtered.length) {
+              setQueue([]);
+              setQueueIndex(0);
+              return;
+            }
+            const playing = queue[queueIndex];
+            if (playing && filtered.some((video) => video.id === playing.id)) return;
+            buildFrom(loaded, filtered);
+          }} />
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-4">
             <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} />
