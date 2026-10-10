@@ -49,7 +49,8 @@ const SELF_DEFENSE_QUERY = {
 export async function loadCategoryVideos(ageGroup, label, categoryId, languages = ["en"], query) {
   const faith = /faith|islam|quran|iqra|qaida|tajweed/i.test(`${label} ${query || ""} ${categoryId || ""}`);
   const selfDefense = /self.?defense/i.test(`${label} ${categoryId}`);
-  const base = query || (selfDefense ? SELF_DEFENSE_QUERY[ageGroup] || SELF_DEFENSE_QUERY.tween_8_12 : faith ? "Quran lessons for kids" : `${label} for kids`);
+  const pretty = String(label || "learning").replaceAll("_", " ");
+  const base = query || (selfDefense ? SELF_DEFENSE_QUERY[ageGroup] || SELF_DEFENSE_QUERY.tween_8_12 : faith ? "Quran lessons for kids" : `${pretty} for kids`);
   const codes = [...new Set((languages.length ? languages : ["en"]).map((code) => String(code).slice(0, 2).toLowerCase()))].slice(0, 1);
   const saved = [];
   const seen = new Set();

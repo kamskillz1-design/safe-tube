@@ -309,9 +309,11 @@ export default function Watch() {
         <WatchFolderBar hideSuggestions onSuggestionsChange={handleSuggestions} videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => {
             const loaded = profileRef.current;
             if (!loaded) return;
-            if (!filtered.length) return;
-            const playing = queue[queueIndex];
-            if (playing && filtered.some((video) => video.id === playing.id)) return;
+            if (!filtered.length) {
+              setQueue([]);
+              setQueueIndex(0);
+              return;
+            }
             buildFrom(loaded, filtered);
           }} />
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
