@@ -37,11 +37,14 @@ export default function Register() {
         options: { emailRedirectTo: siteReturn(), data: { role: "parent" } },
       });
       if (error) throw error;
-      await fetch("/api/parent-welcome", {
+      const welcome = await fetch("/api/parent-welcome", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, site: window.location.origin }),
-      }).catch(() => {});
+      }).then((response) => response.json()).catch(() => null);
+      if (!welcome?.sent) {
+        setError(welcome?.error || welcome?.detail || "Account created, but the welcome email could not be sent.");
+      }
       if (data.session) {
         window.location.href = safeReturnTo();
         return;
