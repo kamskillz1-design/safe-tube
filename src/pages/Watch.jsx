@@ -73,6 +73,7 @@ export default function Watch() {
   const durationLabel = (video) => t("watch.duration", { minutes: Math.max(1, Math.round((video.durationSeconds ?? 0) / 60)) });
   const [profile, setProfile] = useState(null);
   const [libraryVideos, setLibraryVideos] = useState([]);
+  const [browsing, setBrowsing] = useState(true);
   const [queue, setQueue] = useState([]);
   const [queueIndex, setQueueIndex] = useState(0);
   const [phase, setPhase] = useState("loading");
@@ -91,6 +92,7 @@ export default function Watch() {
   }, []);
   const playSuggested = (video) => {
     if (!video?.id || !profile) return;
+    setBrowsing(false);
     setQueue((current) => [video, ...current.filter((item) => item.id !== video.id)]);
     setQueueIndex(0);
     setPhase("ready");
@@ -148,11 +150,7 @@ export default function Watch() {
         const { videos } = await loadFeed(loaded);
         if (!alive) return;
         setLibraryVideos(videos);
-        if (!videos.length) {
-          setPhase("ready");
-          return;
-        }
-        await buildFrom(loaded, videos, first);
+        setPhase("ready");
       } catch (error) {
         if (!alive) return;
         setPhase(error instanceof YoutubeApiError && error.code === "MISSING_API_KEY" ? "nokey" : "error");
@@ -281,8 +279,11 @@ export default function Watch() {
         </div>
       </header>
       <main className="mx-auto max-w-6xl space-y-4 px-4 pb-12 sm:px-6">
-        <HalalBrowse videos={libraryVideos} ageGroup={profile.ageGroup} onPlay={playSuggested} />
+        {browsing && <HalalBrowse videos={libraryVideos} ageGroup={profile.ageGroup} onPlay={playSuggested} />}
+        {!browsing && <button type="button" onClick={() => { setBrowsing(true); setQueue([]); setQueueIndex(0); }} className="h-10 rounded-full border border-border bg-card px-4 text-sm font-semibold hover:bg-accent">Back to browse</button>}
+        <div className={browsing ? "hidden" : ""}>
         <WatchFolderBar hideSuggestions onSuggestionsChange={handleSuggestions} videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => {
+            if (browsing) return;
             const loaded = profileRef.current;
             if (!loaded) return;
             const playing = queue[queueIndex];
@@ -301,7 +302,8 @@ export default function Watch() {
             }
             buildFrom(loaded, filtered);
           }} />
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        </div>
+        {!browsing && <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-4">
             {current ? <SafePlayerView key={`${current.id}-${watchLanguage}`} video={current} language={watchLanguage} onEnded={handleEnded} liveQuestions={learning?.questions} onQuestionAnswered={handleLiveQuestion} onPlayingChange={(isPlaying) => { playingRef.current = isPlaying; }} /> : <PlayerPlaceholder text="Loading safe videos." />}
             {current && <SlipNote video={current} ageGroup={profile.ageGroup} />}
