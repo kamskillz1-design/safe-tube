@@ -66,6 +66,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
       languages: choices,
       tree,
       getExisting: () => [...videosRef.current, ...extraRef.current],
+      getPreferred: () => selectedId,
       onBatch: (rows) => {
         if (stopped) return;
         setExtra((current) => unique([...current, ...rows]));

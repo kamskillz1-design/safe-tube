@@ -99,7 +99,7 @@ export async function loadCategoryVideos(ageGroup, label, categoryId, languages 
   return saved.slice(0, KEEP);
 }
 
-export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], getExisting, onBatch, shouldStop }) {
+export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], getExisting, getPreferred, onBatch, shouldStop }) {
   const targets = tree.filter((node) => !node.hidden && !node.parentId);
   let cursor = 0;
   let running = false;
@@ -107,7 +107,8 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
     if (shouldStop?.() || running || !targets.length) return;
     running = true;
     try {
-      const node = targets[cursor % targets.length];
+      const preferred = targets.find((item) => item.id === getPreferred?.());
+      const node = preferred && cursor % 2 === 0 ? preferred : targets[cursor % targets.length];
       cursor += 1;
       const existing = getExisting?.() || [];
       const have = existing.filter((video) => video.categoryId === node.id);
