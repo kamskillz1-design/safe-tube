@@ -47,7 +47,9 @@ const SELF_DEFENSE_QUERY = {
 function queryFor(categoryId, label, ageGroup) {
   if (/self.?defense/i.test(`${label} ${categoryId}`)) return SELF_DEFENSE_QUERY[ageGroup] || SELF_DEFENSE_QUERY.tween_8_12;
   if (QUERY_BY_ID[categoryId]) return QUERY_BY_ID[categoryId];
-  if (/faith|islam|quran|iqra|qaida|tajweed/i.test(`${label} ${categoryId}`)) return "Islamic stories for kids";
+  if (/iqra|quran|qaida|tajweed/i.test(`${label} ${categoryId}`)) return "Quran for kids";
+  if (/islam/i.test(`${label} ${categoryId}`)) return "Islamic stories for kids";
+  if (/faith/i.test(`${label} ${categoryId}`)) return "kindness and values for kids";
   return `${String(label || "learning").replaceAll("_", " ")} for kids`;
 }
 
@@ -58,16 +60,34 @@ function keepLessons(found, ageGroup, selfDefense) {
   return pool.slice(0, KEEP);
 }
 
+
+const QURAN = /quran|surah|surat|iqra|qaida|tajweed|fatiha|ikhlas|falaq|naas|an-nas/;
+const CODING = /scratch|coding|programming|code a/;
+const ART = /how to draw|drawing lesson|art lesson/;
+const ANIMAL = /elephant|lion|whale|dolphin|gorilla|cheetah|animal/;
+
+export function belongsIn(video, categoryId) {
+  const text = `${video.title || ""} ${video.description || ""}`.toLowerCase();
+  if (!categoryId) return true;
+  if (categoryId.startsWith("cat_iqra")) return QURAN.test(text) || video.categoryId?.startsWith("cat_iqra");
+  if (QURAN.test(text)) return false;
+  if (categoryId === "cat_coding_technology" || categoryId === "cat_digital_skills" || categoryId === "cat_ai" || categoryId === "cat_film_making") return CODING.test(text) || video.categoryId === categoryId;
+  if (CODING.test(text) && /cat_stem|cat_arts|cat_faith/.test(categoryId)) return false;
+  if (categoryId === "cat_arts") return ART.test(text) || video.categoryId === "cat_arts";
+  if (categoryId === "cat_nature_animals") return ANIMAL.test(text) || video.categoryId === "cat_nature_animals";
+  return video.categoryId === categoryId || !video.categoryId;
+}
+
 function toRows(found, ageGroup, language, categoryId, label, selfDefense) {
   const now = new Date().toISOString();
-  return keepLessons(found, ageGroup, selfDefense).map((video) => ({
+  return keepLessons(found, ageGroup, selfDefense).filter((video) => belongsIn(video, categoryId)).map((video) => ({
     id: video.id,
     title: video.title,
     description: video.description,
     channelId: video.channelId,
     channelTitle: video.channelTitle,
     category: label || "STEM",
-    categoryId,
+    categoryId: belongsIn({ ...video, categoryId }, categoryId) ? categoryId : null,
     ageGroup,
     language: video.languageFallback ? "en" : language,
     languageFallback: !!video.languageFallback,
