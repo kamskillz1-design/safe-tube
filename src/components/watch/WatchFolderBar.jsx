@@ -146,34 +146,8 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     onSuggestionsChange?.(suggestions, (video) => chooseRef.current?.(video));
   }, [suggestions, onSuggestionsChange]);
 
-  const [query, setQuery] = useState("");
-  const tabs = [
-    { id: null, label: "Main" },
-    { id: "cat_iqra", label: "Quran" },
-    { id: "cat_faith", label: "Values" },
-    { id: "cat_stem", label: "Learn" },
-    { id: "cat_arts", label: "Arts" },
-    { id: "cat_nature_animals", label: "Nature" },
-    { id: "cat_history", label: "Stories" },
-    { id: "cat_life_skills", label: "Skills" },
-    { id: "cat_world_cultures", label: "World" },
-    { id: "cat_sports_games", label: "Sports" },
-    { id: "cat_cooking_food", label: "Food" },
-    { id: "cat_self_defense", label: "Safety" },
-  ];
-  const shown = suggestions.filter((video) => !query.trim() || `${video.title} ${video.channelTitle}`.toLowerCase().includes(query.trim().toLowerCase()));
-
   return (
-    <div className="space-y-3 rounded-3xl border border-border bg-card p-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <p className="font-heading text-xl font-bold text-primary">HalalTube</p>
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search this category..." className="h-10 min-w-48 flex-1 rounded-full border border-border bg-background px-4 text-sm" />
-      </div>
-      <div className="flex gap-2 overflow-x-auto">
-        {tabs.map((item) => (
-          <button key={item.label} type="button" onClick={() => select(item.id)} className={`h-9 shrink-0 rounded-full px-3 text-sm font-semibold ${selectedId === item.id ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{item.label}</button>
-        ))}
-      </div>
+    <div className="space-y-2">
       <CategoryBrowse tree={tree} selectedId={selectedId} onSelect={select} t={t} />
       {iqraOpen && (
         <label className="flex items-center text-sm text-muted-foreground">
@@ -184,9 +158,9 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
         </label>
       )}
       <p className="text-sm text-muted-foreground">{notice}</p>
-      {!hideSuggestions && shown.length > 0 && (
+      {!hideSuggestions && suggestions.length > 0 && (
         <div className="flex gap-3 overflow-x-auto pb-1">
-          {shown.map((video) => (
+          {suggestions.map((video) => (
             <button key={video.id} type="button" onClick={() => chooseSuggestion(video)} className="w-44 shrink-0 rounded-xl bg-accent p-2 text-left hover:bg-accent/80">
               <img src={video.thumbnail || ""} alt="" className="mb-1 h-24 w-full rounded-lg bg-muted object-cover" />
               <span className="line-clamp-2 text-xs font-medium">{video.title}</span>
