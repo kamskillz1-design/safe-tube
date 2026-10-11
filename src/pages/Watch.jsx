@@ -15,7 +15,6 @@ import ScreenTimeLock from "@/components/ScreenTimeLock";
 import TokenBadge from "@/components/TokenBadge";
 import VocabularyPanel from "@/components/watch/VocabularyPanel";
 import WatchFolderBar from "@/components/watch/WatchFolderBar";
-import HalalBrowse from "@/components/watch/HalalBrowse";
 import SlipNote from "@/components/watch/SlipNote";
 import { getVideoLearning } from "@/app/learning";
 
@@ -281,7 +280,6 @@ export default function Watch() {
         </div>
       </header>
       <main className="mx-auto max-w-6xl space-y-4 px-4 pb-12 sm:px-6">
-        <HalalBrowse videos={libraryVideos} ageGroup={profile.ageGroup} onPlay={playSuggested} />
         <WatchFolderBar hideSuggestions onSuggestionsChange={handleSuggestions} videos={libraryVideos} ageGroup={profile.ageGroup} languages={[watchLanguage]} readingLevel={profile.readingLevel || "letters"} t={t} onFilter={(filtered) => {
             const loaded = profileRef.current;
             if (!loaded) return;
