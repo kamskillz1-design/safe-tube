@@ -229,7 +229,7 @@ export default function Watch() {
     sessionRef.current = { ...sessionRef.current, quizResults: [...(sessionRef.current.quizResults ?? []), { correct, at: new Date().toISOString() }] };
     saveSession(sessionRef.current);
     const nextIndex = queueIndex + 1;
-    if (nextIndex >= queue.length) return setPhase("done");
+    if (nextIndex >= queue.length) return setPhase("ready");
     const nextVideo = queue[nextIndex];
     setQueueIndex(nextIndex);
     if (nextVideo.category === ENTERTAINMENT_CATEGORY) spendTokens(nextVideo, entertainmentCostFor(profile.ageGroup));
@@ -241,7 +241,7 @@ export default function Watch() {
       recordPreference(profileId, queue[queueIndex], "skip");
     }
     const nextIndex = queueIndex + 1;
-    if (nextIndex >= queue.length) return setPhase("done");
+    if (nextIndex >= queue.length) return setPhase("ready");
     const nextVideo = queue[nextIndex];
     setQueueIndex(nextIndex);
     if (nextVideo.category === ENTERTAINMENT_CATEGORY) spendTokens(nextVideo, entertainmentCostFor(profile.ageGroup));
@@ -288,7 +288,14 @@ export default function Watch() {
               if (playing) { setQueue([]); setQueueIndex(0); }
               return;
             }
-            if (playing && filtered.some((video) => video.id === playing.id)) return;
+            if (playing && filtered.some((video) => video.id === playing.id)) {
+              setQueue((current) => {
+                const known = new Set(current.map((video) => video.id));
+                const fresh = filtered.filter((video) => !known.has(video.id));
+                return fresh.length ? [...current, ...fresh] : current;
+              });
+              return;
+            }
             buildFrom(loaded, filtered);
           }} />
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">

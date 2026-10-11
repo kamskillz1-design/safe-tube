@@ -123,6 +123,6 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
     }
   };
   tick();
-  const timer = setInterval(tick, 5000);
+  const timer = setInterval(tick, 2500);
   return () => clearInterval(timer);
 }
