@@ -1,5 +1,6 @@
 import { applyWhitelistGates, passesKeywordBlocker } from "@/domain/gates";
-import { searchVideos } from "@/adapters/youtubeClient";
+import { fetchChannelUploads, searchVideos } from "@/adapters/youtubeClient";
+import { defaultTrustedChannels } from "@/app/library";
 import { libraryVideosForAge, putLibraryVideos } from "@/adapters/localDb";
 import { safeQuery } from "@/domain/safety";
 
@@ -113,7 +114,13 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
       const existing = getExisting?.() || [];
       const have = existing.filter((video) => video.categoryId === node.id);
       if (have.length >= KEEP) return;
-      const batch = await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, languages);
+      const channels = (await defaultTrustedChannels()).filter((channel) => channel.ageGroup === ageGroup && channel.channelId && channel.primaryCategoryId === node.id);
+      let batch = [];
+      for (const channel of channels.slice(0, 2)) {
+        const uploads = await fetchChannelUploads(channel.channelId, 8);
+        batch.push(...toRows(uploads, ageGroup, languages[0] || "en", node.id, node.slug || "Learning", /self.?defense/i.test(node.id)));
+      }
+      if (batch.length < 4) batch.push(...await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, languages));
       const taken = new Set(existing.map((video) => video.id));
       const fresh = batch.filter((video) => video.categoryId === node.id && !taken.has(video.id));
       if (fresh.length) onBatch?.(fresh);

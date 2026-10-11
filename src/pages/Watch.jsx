@@ -325,9 +325,9 @@ export default function Watch() {
             <div className="flex items-center gap-3 rounded-3xl border border-border bg-card p-4"><Coins className="h-6 w-6 shrink-0 text-primary" /><p className="font-heading text-lg font-bold">{t("profile.tokens", { count: profile.educationalTokens })}</p></div>
             <div className="space-y-2">
               <p className="text-sm font-semibold text-muted-foreground">{t("player.suggested")}</p>
-              {suggested.length === 0 ? <p className="text-sm text-muted-foreground">{t("player.queueDone")}</p> : (
+              {suggested.filter((video) => video.id !== current?.id).length === 0 ? <p className="text-sm text-muted-foreground">{t("player.queueDone")}</p> : (
                 <ul className="space-y-2">
-                  {suggested.map((video) => (
+                  {suggested.filter((video) => video.id !== current?.id).map((video) => (
                     <li key={video.id}>
                       <button type="button" onClick={() => playSuggested(video)} className="flex w-full gap-3 rounded-xl bg-accent p-2 text-left hover:bg-accent/80">
                         <img src={video.thumbnail || ""} alt="" className="h-16 w-28 shrink-0 rounded-lg bg-muted object-cover" />

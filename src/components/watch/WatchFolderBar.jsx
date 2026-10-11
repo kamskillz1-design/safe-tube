@@ -94,7 +94,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   }, [group, instruction, selectedId, tree]);
 
   useEffect(() => {
-    const filtered = forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction);
+    const filtered = unique(forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction));
     setSuggestions(filtered.length ? shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 8) : []);
     if (filtered.length) onFilter(filtered);
   }, [selectedId, videos, tree, extra, group, instruction]);
@@ -110,7 +110,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     setNotice(`${language.toUpperCase()} videos will load over time.`);
     setSuggestions([]);
     const starters = startersFor(group, id);
-    const existing = shuffleFresh(forLanguage(videosInCategory([...videos, ...extra, ...starters], tree, id), language), readJson(seenKey(group), []));
+    const existing = unique(shuffleFresh(forLanguage(videosInCategory([...videos, ...extra, ...starters], tree, id), language), readJson(seenKey(group), [])));
     if (starters.length) setExtra((current) => unique([...starters, ...current]));
     onFilter(existing);
     if (existing.length) setSuggestions(existing.slice(0, 8));
