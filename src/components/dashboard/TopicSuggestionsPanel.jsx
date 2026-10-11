@@ -38,6 +38,7 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
   const [profileId, setProfileId] = useState(null);
   const [added, setAdded] = useState([]);
   const [replacements, setReplacements] = useState({});
+  const [resolved, setResolved] = useState({});
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState(null);
 
@@ -51,14 +52,15 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
     const key = `${category}:${language}`;
     const existing = base.find((row) => row.category === category && row.language === language && !taken.has(row.name.toLowerCase()));
     const replacement = replacements[key];
-    const row = replacement || existing || {
-      name: `${category.replaceAll("_", " ")} (${language.toUpperCase()})`,
+    const found = resolved[key];
+    const row = replacement || found || existing || {
+      name: "Looking for a channel",
       query: `${category.replaceAll("_", " ")} for kids`,
       language,
       category,
       kind: "topic",
     };
-    return { ...row, key };
+    return { ...row, key, pending: !replacement && !found && !existing?.channelId };
   })).filter((row) => !taken.has(row.name.toLowerCase()));
 
   const refresh = async () => {
@@ -70,6 +72,25 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
   useEffect(() => {
     refresh();
   }, []);
+
+  useEffect(() => {
+    if (!profile) return undefined;
+    let stopped = false;
+    const run = async () => {
+      for (const category of EDUCATIONAL_CATEGORIES) {
+        for (const language of languages) {
+          if (stopped) return;
+          const key = `${category}:${language}`;
+          if (resolved[key]) continue;
+          const next = await nextChannelChoice({ ageGroup: profile.ageGroup, language, category, exclude: added });
+          if (stopped || !next) continue;
+          setResolved((current) => ({ ...current, [key]: { name: next.title, query: next.title, channelId: next.channelId, language, category, kind: "topic" } }));
+        }
+      }
+    };
+    run();
+    return () => { stopped = true; };
+  }, [profile?.id, profile?.ageGroup, languages.join("|")]);
 
   const add = async (row) => {
     setBusy(row.key);
@@ -131,10 +152,10 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         {slots.map((row) => (
           <li key={row.key} className="flex items-center justify-between gap-3 py-3">
             <div>
-              <p className="font-semibold">{row.name}</p>
+              <p className="font-semibold">{row.channelId ? row.name : "Looking for a channel"}</p>
               <p className="text-xs text-muted-foreground">{LANGUAGES.find((language) => language.code === row.language)?.nativeName || row.language.toUpperCase()} · {String(row.category).replaceAll("_", " ")}</p>
             </div>
-            <button type="button" disabled={busy === row.key} onClick={() => add(row)} className="flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+            <button type="button" disabled={busy === row.key || !row.channelId} onClick={() => add(row)} className="flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
               {busy === row.key ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               {t("curator.add")}
             </button>

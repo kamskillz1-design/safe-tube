@@ -5,6 +5,7 @@ const older = [AGE_GROUPS.TWEEN, AGE_GROUPS.TEEN];
 const fromEarly = [AGE_GROUPS.EARLY_LEARNER, ...older];
 
 const TOPICS = [
+  { category: CATEGORIES.IQRA, label: "IQRA", ages: all, q: "Quran for kids" },
   { category: CATEGORIES.STEM, label: "Science", ages: all, q: "science for kids" },
   { category: CATEGORIES.ARTS, label: "Art", ages: all, q: "art for kids" },
   { category: CATEGORIES.EMOTIONAL_INTELLIGENCE, label: "Feelings", ages: all, q: "feelings for kids" },
@@ -31,7 +32,7 @@ const LANG = {
 };
 
 export function topicSuggestions(languages, ageGroup) {
-  const codes = [...new Set((languages || []).map((code) => String(code).slice(0, 2).toLowerCase()))].filter((code) => code && code !== "en");
+  const codes = [...new Set(["en", ...(languages || [])].map((code) => String(code).slice(0, 2).toLowerCase()))].filter(Boolean);
   return codes.flatMap((language) =>
     TOPICS.filter((topic) => topic.ages.includes(ageGroup)).map((topic) => ({
       name: `${topic.label} (${language.toUpperCase()})`,
