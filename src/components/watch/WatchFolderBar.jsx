@@ -48,7 +48,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   const remember = (categoryId, language, list) => {
     localStorage.setItem(memoryKey(group), JSON.stringify({ categoryId, language }));
     const scoped = forLanguage(list, language);
-    setSuggestions(scoped.slice(0, 8));
+    setSuggestions(scoped.slice(0, 12));
     if (scoped.length) onFilter(scoped);
   };
 
@@ -95,7 +95,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
 
   useEffect(() => {
     const filtered = unique(forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction));
-    setSuggestions(filtered.length ? shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 8) : []);
+    setSuggestions(filtered.length ? shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 12) : []);
     if (filtered.length) onFilter(filtered);
   }, [selectedId, videos, tree, extra, group, instruction]);
 
@@ -113,7 +113,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     const existing = unique(shuffleFresh(forLanguage(videosInCategory([...videos, ...extra, ...starters], tree, id), language), readJson(seenKey(group), [])));
     if (starters.length) setExtra((current) => unique([...starters, ...current]));
     onFilter(existing);
-    if (existing.length) setSuggestions(existing.slice(0, 8));
+    if (existing.length) setSuggestions(existing.slice(0, 12));
     try {
       const targets = id ? [node].filter(Boolean) : tree.filter((item) => !item.parentId && !item.hidden).slice(0, 4);
       let loaded = [];
