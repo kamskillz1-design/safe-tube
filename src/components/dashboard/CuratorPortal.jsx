@@ -98,8 +98,6 @@ export default function CuratorPortal() {
 
   return (
     <div className="space-y-10">
-      <MuslimKidsPanel t={t} ageGroup={ageGroup} onChanged={refresh} />
-      <TopicSuggestionsPanel t={t} onChanged={refresh} />
       <section className="space-y-4 rounded-3xl border border-border bg-card p-6">
         <h2 className="font-heading text-xl font-bold">{t("curator.addTitle")}</h2>
         <p className="text-sm text-muted-foreground">{t("curator.addText")}</p>
@@ -151,7 +149,12 @@ export default function CuratorPortal() {
             {t(channelNotice.key, channelNotice.params)}
           </p>
         )}
-        {channels.length > 0 && (
+      </section>
+      <TopicSuggestionsPanel t={t} onChanged={refresh} />
+      <MuslimKidsPanel t={t} ageGroup={ageGroup} onChanged={refresh} />
+      {channels.length > 0 && (
+        <section className="space-y-4 rounded-3xl border border-border bg-card p-6">
+          <h2 className="font-heading text-xl font-bold">Channels you added</h2>
           <ul className="divide-y divide-border">
             {channels.map((channel) => (
               <li key={channel.id} className="flex items-center justify-between gap-3 py-3">
@@ -179,11 +182,10 @@ export default function CuratorPortal() {
               </li>
             ))}
           </ul>
-        )}
-      </section>
-
-      <ChannelPackPanel t={t} />
+        </section>
+      )}
       <CategoryTreeManager t={t} />
+      <ChannelPackPanel t={t} />
       <VerifiedChannelsPanel ageGroup={ageGroup} />
     </div>
   );
