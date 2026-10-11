@@ -288,11 +288,12 @@ export default function Watch() {
               if (playing) { setQueue([]); setQueueIndex(0); }
               return;
             }
-            if (playing && filtered.some((video) => video.id === playing.id)) {
+            const allowed = new Set(filtered.map((video) => video.id));
+            if (playing && allowed.has(playing.id)) {
               setQueue((current) => {
-                const known = new Set(current.map((video) => video.id));
-                const fresh = filtered.filter((video) => !known.has(video.id));
-                return fresh.length ? [...current, ...fresh] : current;
+                const kept = current.filter((video) => allowed.has(video.id));
+                const known = new Set(kept.map((video) => video.id));
+                return [...kept, ...filtered.filter((video) => !known.has(video.id))];
               });
               return;
             }

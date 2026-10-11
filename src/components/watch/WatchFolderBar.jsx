@@ -54,8 +54,10 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
 
   const videosRef = useRef(videos);
   const extraRef = useRef(extra);
+  const selectedRef = useRef(selectedId);
   videosRef.current = videos;
   extraRef.current = extra;
+  selectedRef.current = selectedId;
 
   useEffect(() => {
     if (!group) return undefined;
@@ -66,7 +68,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
       languages: choices,
       tree,
       getExisting: () => [...videosRef.current, ...extraRef.current],
-      getPreferred: () => selectedId,
+      getPreferred: () => selectedRef.current,
       onBatch: (rows) => {
         if (stopped) return;
         setExtra((current) => unique([...current, ...rows]));
@@ -84,10 +86,9 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
       ageGroup: group,
       language: instruction,
       onVideos: (rows) => {
-        const scoped = forLanguage(videosInCategory(rows, tree, selectedId), instruction);
-        setExtra((current) => unique([...current, ...rows]));
-        if (scoped.length) setSuggestions((current) => unique([...scoped, ...current]).slice(0, 8));
-        setNotice("New videos are arriving slowly.");
+        const scoped = forLanguage(videosInCategory(rows, tree, selectedRef.current), instruction);
+        if (scoped.length) setExtra((current) => unique([...current, ...scoped]));
+        setNotice(scoped.length ? "New videos are arriving for this category." : "Looking for more videos in this category.");
       },
     });
   }, [group, instruction, selectedId, tree]);
