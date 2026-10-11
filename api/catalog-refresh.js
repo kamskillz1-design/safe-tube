@@ -62,9 +62,8 @@ export default async function handler(req, res) {
   }
 
   const all = jobs();
-  const batchSize = 12;
-  const start = (new Date().getUTCDate() + new Date().getUTCHours()) % all.length;
-  const batch = Array.from({ length: batchSize }, (_, index) => all[(start + index) % all.length]);
+  const age = AGES[new Date().getUTCDate() % AGES.length];
+  const batch = all.filter((job) => job.ageGroup === age);
   const rows = [];
   for (const job of batch) {
     const search = await yt("/search", {

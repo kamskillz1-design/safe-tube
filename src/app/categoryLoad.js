@@ -5,7 +5,7 @@ import { safeQuery } from "@/domain/safety";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const HINT = { es: "en español", fr: "en français", de: "auf Deutsch", zh: "中文", ar: "بالعربية", hi: "हिंदी", pt: "em português", ja: "日本語", ru: "на русском", it: "in italiano", ko: "한국어", tr: "Türkçe", eu: "euskara", id: "bahasa Indonesia", pl: "po polsku", ur: "in Urdu اردو" };
-const KEEP = 6;
+const KEEP = 8;
 const VIOLENT = /fight|weapon|gun|knife|blood|punch|kick|choke|strangle|mma|boxing|combat|attack|kill|wrestling/;
 
 const QUERY_BY_ID = {
@@ -37,10 +37,10 @@ const QUERY_BY_ID = {
 };
 
 const SELF_DEFENSE_QUERY = {
-  toddler_2_4: "body safety for toddlers my body is mine",
-  early_learner_5_7: "body safety for kids stranger safety",
-  tween_8_12: "personal safety for kids stay safe and get away",
-  teen_13_16: "self defense basics for teenagers awareness",
+  toddler_2_4: "my body belongs to me for toddlers",
+  early_learner_5_7: "body safety for kids safe and unsafe touch",
+  tween_8_12: "personal safety for kids say no and tell a trusted adult",
+  teen_13_16: "teen personal safety awareness and getting help",
 };
 
 function queryFor(categoryId, label, ageGroup) {

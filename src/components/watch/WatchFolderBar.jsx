@@ -3,6 +3,7 @@ import { systemCategoryTree } from "@/data/categoryTree";
 import { idToLegacyCategory } from "@/domain/categories";
 import CategoryBrowse, { videosInCategory } from "@/components/CategoryBrowse";
 import { loadCategoryVideos, startCategoryFill } from "@/app/categoryLoad";
+import { startersFor } from "@/data/starterVideos";
 import { startSlowInflow } from "@/app/inflow";
 import { IQRA_LEVELS, iqraQuery } from "@/content/packs/iqra";
 
@@ -106,7 +107,9 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     localStorage.setItem(memoryKey(group), JSON.stringify({ categoryId: id, language }));
     setNotice(`${language.toUpperCase()} videos will load over time.`);
     setSuggestions([]);
-    const existing = shuffleFresh(forLanguage(videosInCategory([...videos, ...extra], tree, id), language), readJson(seenKey(group), []));
+    const starters = startersFor(group, id);
+    const existing = shuffleFresh(forLanguage(videosInCategory([...videos, ...extra, ...starters], tree, id), language), readJson(seenKey(group), []));
+    if (starters.length) setExtra((current) => unique([...starters, ...current]));
     onFilter(existing);
     if (existing.length) setSuggestions(existing.slice(0, 8));
     try {

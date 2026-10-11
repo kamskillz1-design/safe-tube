@@ -16,6 +16,7 @@ import { searchVideos } from "@/adapters/youtubeClient";
 import { putLibraryVideos } from "@/adapters/localDb";
 import { applyWhitelistGates } from "@/domain/gates";
 import { safeQuery } from "@/domain/safety";
+import { startersFor } from "@/data/starterVideos";
 import { loadCategoryVideos } from "@/app/categoryLoad";
 
 const allowed = (videos) => videos.filter((video) => video.category !== "Music_Dance");
@@ -66,7 +67,15 @@ async function importServerCatalog(ageGroup) {
   return data.videos.length;
 }
 
+async function importStarterVideos(ageGroup) {
+  const now = new Date().toISOString();
+  const rows = startersFor(ageGroup).map((video) => ({ ...video, addedAt: now, sourceChannelId: "" }));
+  await putLibraryVideos(rows);
+  return rows.length;
+}
+
 export async function loadFeed(profile) {
+  await importStarterVideos(profile.ageGroup);
   await importApprovedDiscovery(profile.ageGroup);
   try { await importServerCatalog(profile.ageGroup); } catch { /* The local library still works if the shared catalog is offline. */ }
   let videos = allowed(await getLibraryVideosForProfile(profile));

@@ -99,7 +99,7 @@ export default async function handler(req, res) {
       const languageCode = /^[a-z]{2}$/.test(payload.languageCode || "") ? payload.languageCode : "en";
       const maxResults = Math.min(Math.max(Number(payload.maxResults) || 8, 1), 12);
       const region = { ur: "PK", ar: "SA", hi: "IN", bn: "BD", fr: "FR", es: "ES", tr: "TR", id: "ID" }[languageCode];
-      const search = await ytFetch("/search", { part: "snippet", q: term, type: "video", maxResults, relevanceLanguage: languageCode, safeSearch: "strict", videoEmbeddable: true, ...(region ? { regionCode: region } : {}) }, apiKey);
+      const search = await ytFetch("/search", { part: "snippet", q: term, type: "video", maxResults, relevanceLanguage: languageCode, safeSearch: "strict", videoEmbeddable: true, videoDuration: "medium", ...(region ? { regionCode: region } : {}) }, apiKey);
       const ids = (search.items || []).map((i) => i.id?.videoId).filter((id) => /^[\w-]{11}$/.test(id));
       if (!ids.length) return ok(res, { videos: [] });
       const details = await ytFetch("/videos", { part: "snippet,contentDetails,statistics", id: ids.join(",") }, apiKey);
