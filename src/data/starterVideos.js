@@ -93,6 +93,24 @@ export const STARTER_VIDEOS = [
   row("-yiwOKDHtHU", "Learn Quran For Kids | Surah Al-Masad", "YouQaria", "IQRA", "cat_iqra", 160),
   row("U5sIou8jmXw", "Learn Quran For Kids | Surah Al-Kawthar", "YouQaria", "IQRA", "cat_iqra", 100),
   row("pC1RvXbnnXI", "Quran for Kids: Learn Surat Al-Fatiha", "Musk Channel", "IQRA", "cat_iqra", 296),
+
+  row("tClxdOsC_JY", "Ancient Rome for Kids", "Homeschool Pop", "History", "cat_history", 669),
+  row("jloEzVh31TE", "Ancient Greece for Kids", "Homeschool Pop", "History", "cat_history", 467),
+  row("Wo0KujQEJ_s", "Ancient Rome for Kids", "Learn Bright", "History", "cat_history", 484),
+  row("_0DUlp7NOeM", "Ancient Egypt Facts for Kids", "Homeschool Pop", "History", "cat_history", 470),
+  row("zmon5Tv6bYU", "All about Australia for Kids", "Learn Bright", "World_Cultures", "cat_world_cultures", 531),
+  row("6J6UpxMxG_8", "All about India for Kids", "Learn Bright", "World_Cultures", "cat_world_cultures", 586),
+  row("Qo7aTFHyhPE", "All about Canada for Kids", "Learn Bright", "World_Cultures", "cat_world_cultures", 488),
+  row("go1Vg6mik24", "Antarctica for Kids", "Learn Bright", "Geography", "cat_geography", 509),
+  row("qw5ONnkBbvc", "The Grand Canyon for Kids", "Learn Bright", "Geography", "cat_geography", 386),
+  row("eWXZ7-_o_R4", "Countries of the World for Kids", "Happy Okapi", "World_Cultures", "cat_world_cultures", 443),
+  row("sb-wF35TuvQ", "Introduction to Scratch", "Kids Coding Playground", "Coding_Technology", "cat_coding_technology", 728),
+  row("tbfkIXjc6CM", "Introduction to Scratch Part 2", "Kids Coding Playground", "Coding_Technology", "cat_coding_technology", 768),
+  row("LjOfOQkpPnU", "What is Scratch?", "Scratch Team", "Coding_Technology", "cat_coding_technology", 97),
+  row("TsgryTenm04", "How to Make a Simple Animation in Scratch", "Science Buddies", "Film_Making", "cat_film_making", 732),
+  row("4ogkMy59aBI", "How to Use Costumes in Scratch", "Science Buddies", "Digital_Skills", "cat_digital_skills", 393),
+  row("PTRJca3kVp4", "How to Add Sprites in Scratch", "Science Buddies", "Digital_Skills", "cat_digital_skills", 481),
+  row("iy2sB57tGHM", "ScratchJr Coding Lesson 3", "STEMinGames", "Digital_Skills", "cat_digital_skills", 641),
 ];
 
 export function startersFor(ageGroup, categoryId) {
