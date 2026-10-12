@@ -57,30 +57,38 @@ export function exerciseSuggestions(ageGroup) {
 }
 
 const SEEDS = {
-  IQRA: ["One4Kids", "YouQaria", "Zaky", "Muslim Kids TV"],
-  STEM: ["SciShow Kids", "Crash Course Kids", "National Geographic Kids", "FreeSchool"],
-  Arts: ["Art for Kids Hub", "Draw So Cute", "Kids Academy"],
-  Emotional_Intelligence: ["Sesame Street", "PBS Kids", "Cosmic Kids"],
-  Literacy_Language: ["Kids Academy", "Homeschool Pop", "Jack Hartmann"],
-  Nature_Animals: ["Nat Geo Kids", "FreeSchool", "National Geographic Kids"],
-  Life_Skills: ["PBS Kids", "Sesame Street", "Kids Academy"],
-  World_Cultures: ["National Geographic Kids", "FreeSchool", "Kids Academy"],
-  History: ["Crash Course Kids", "Homeschool Pop", "FreeSchool"],
-  Geography: ["National Geographic Kids", "FreeSchool", "Kids Academy"],
-  Coding_Technology: ["ScratchJr", "Code.org", "Khan Academy Kids"],
-  AI: ["SciShow Kids", "Crash Course Kids", "Khan Academy Kids"],
-  Film_Making: ["Khan Academy Kids", "Kids Academy", "Art for Kids Hub"],
-  Digital_Skills: ["Khan Academy Kids", "Code.org", "ScratchJr"],
-  Cooking_Food: ["Nerdy Nummies", "Kids Academy", "PBS Kids"],
-  Sports_Games: ["GoNoodle", "Cosmic Kids", "Jack Hartmann"],
-  Environmental_Awareness: ["SciShow Kids", "Nat Geo Kids", "FreeSchool"],
-  Health_Movement: ["GoNoodle", "Cosmic Kids", "Jack Hartmann"],
-  Self_Defense: ["Kids Academy", "PBS Kids", "Sesame Street"],
+  IQRA: ["One4Kids", "YouQaria", "Zaky", "Muslim Kids TV", "Quran Kids TV", "Omar & Hana"],
+  STEM: ["SciShow Kids", "Crash Course Kids", "National Geographic Kids", "FreeSchool", "Mystery Science", "Science Max"],
+  Arts: ["Art for Kids Hub", "Draw So Cute", "Red Ted Art", "Easy Kids Drawings", "Hey Kids Lets Draw"],
+  Emotional_Intelligence: ["Sesame Street", "Cosmic Kids", "Smile and Learn", "Super Simple Songs"],
+  Literacy_Language: ["Kids Academy", "Homeschool Pop", "Jack Hartmann", "Reading Eggs", "Alphablocks"],
+  Nature_Animals: ["Nat Geo Kids", "FreeSchool", "Animal Wonders Montana", "Brave Wilderness Kids"],
+  Life_Skills: ["PBS Kids", "Sesame Street", "Smile and Learn", "Kids Learning Tube"],
+  World_Cultures: ["National Geographic Kids", "FreeSchool", "Geography Now", "Kids Learning Tube"],
+  History: ["Crash Course Kids", "Homeschool Pop", "Simple History", "Kids Learning Tube"],
+  Geography: ["National Geographic Kids", "Geography Now", "Kids Learning Tube", "FreeSchool"],
+  Coding_Technology: ["ScratchJr", "Code.org", "Tynker", "Kodable"],
+  AI: ["SciShow Kids", "Crash Course Kids", "Two Minute Papers", "Khan Academy"],
+  Film_Making: ["Khan Academy Kids", "Film Riot", "Art for Kids Hub", "Kids Academy"],
+  Digital_Skills: ["Khan Academy Kids", "Code.org", "ScratchJr", "Tynker"],
+  Cooking_Food: ["Nerdy Nummies", "Kids Cooking and Crafts", "Ann Reardon", "PBS Kids"],
+  Sports_Games: ["GoNoodle", "Cosmic Kids", "Jack Hartmann", "Little Sports"],
+  Environmental_Awareness: ["SciShow Kids", "Nat Geo Kids", "FreeSchool", "Eco Kids"],
+  Health_Movement: ["GoNoodle", "Cosmic Kids", "Jack Hartmann", "Kids Workout"],
+  Self_Defense: ["Kids Academy", "PBS Kids", "Sesame Street", "Child Safety Channel"],
 };
+
+export function seedList(category) {
+  return SEEDS[category] || SEEDS.STEM;
+}
 
 export function nextSeed(category, exclude = [], current = "") {
   const taken = new Set(exclude.map((name) => String(name || "").toLowerCase()));
-  const list = SEEDS[category] || SEEDS.STEM;
-  const next = list.find((name) => !taken.has(name.toLowerCase()) && name.toLowerCase() !== current.toLowerCase());
-  return next || list.find((name) => name.toLowerCase() !== current.toLowerCase()) || list[0];
+  const list = seedList(category);
+  const start = Math.max(0, list.findIndex((name) => name.toLowerCase() === String(current || "").toLowerCase()));
+  for (let step = 1; step <= list.length; step += 1) {
+    const name = list[(start + step) % list.length];
+    if (!taken.has(name.toLowerCase()) && name.toLowerCase() !== String(current || "").toLowerCase()) return name;
+  }
+  return list[(start + 1) % list.length];
 }

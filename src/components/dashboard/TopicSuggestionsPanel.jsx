@@ -148,7 +148,8 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         exclude,
         excludeIds,
       });
-      if (next && !excludeIds.includes(next.channelId) && !exclude.map((name) => name.toLowerCase()).includes((next.title || "").toLowerCase())) {
+      const same = (next?.title || "").toLowerCase() === row.name.toLowerCase() || (next?.title || "").toLowerCase() === seed.toLowerCase();
+      if (next && !same && !excludeIds.includes(next.channelId) && !exclude.map((name) => name.toLowerCase()).includes((next.title || "").toLowerCase())) {
         setReplacements((current) => ({
           ...current,
           [row.key]: { name: next.title, query: next.title, channelId: next.channelId, language: row.language, category: row.category, kind: row.kind },
