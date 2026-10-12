@@ -43,10 +43,17 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   const [instruction, setInstruction] = useState(() => readJson(memoryKey(ageGroup), {}).language || languages[0] || "en");
   useEffect(() => {
     const code = languages[0];
-    if (code && code !== instruction) {
-      setInstruction(code);
-      setNotice(`Looking for ${code.toUpperCase()} videos.`);
-    }
+    if (!code || code === instruction) return undefined;
+    setInstruction(code);
+    setNotice(`Looking for ${code.toUpperCase()} videos.`);
+    if (!group || !selectedId) return undefined;
+    let stopped = false;
+    loadCategoryVideos(group, "Learning", selectedId, [code]).then((rows) => {
+      if (stopped || !rows?.length) return;
+      setExtra((current) => unique([...current, ...rows]));
+      onFilter(rows);
+    }).catch(() => {});
+    return () => { stopped = true; };
   }, [languages[0]]);
   const [suggestions, setSuggestions] = useState([]);
   const [blocked, setBlocked] = useState(new Set());

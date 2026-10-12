@@ -36,10 +36,12 @@ const REGION = { es: "ES", fr: "FR", de: "DE", zh: "TW", ar: "SA", hi: "IN", pt:
 function matchesLanguage(video, languageCode) {
   if (!languageCode || languageCode === "en") return true;
   const audio = String(video.language || "").slice(0, 2).toLowerCase();
+  if (audio && audio !== languageCode) return false;
   if (audio === languageCode) return true;
   const text = `${video.title || ""} ${video.description || ""}`;
   if (SCRIPT[languageCode]?.test(text)) return true;
-  return Boolean(WORDS[languageCode]?.test(text.toLowerCase()));
+  if (WORDS[languageCode]?.test(text.toLowerCase())) return true;
+  return !audio;
 }
 
 function plain(value, max) {

@@ -136,9 +136,11 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
       if (have.length >= KEEP) return;
       const channels = (await defaultTrustedChannels()).filter((channel) => channel.ageGroup === ageGroup && channel.channelId && channel.primaryCategoryId === node.id);
       let batch = [];
-      for (const channel of channels.slice(0, 2)) {
-        const uploads = await fetchChannelUploads(channel.channelId, 8);
-        batch.push(...toRows(uploads, ageGroup, languages[0] || "en", node.id, node.slug || "Learning", /self.?defense/i.test(node.id)));
+      if ((languages[0] || "en") === "en") {
+        for (const channel of channels.slice(0, 2)) {
+          const uploads = await fetchChannelUploads(channel.channelId, 8);
+          batch.push(...toRows(uploads, ageGroup, "en", node.id, node.slug || "Learning", /self.?defense/i.test(node.id)));
+        }
       }
       if (batch.length < 4) batch.push(...await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, languages));
       const taken = new Set(existing.map((video) => video.id));
