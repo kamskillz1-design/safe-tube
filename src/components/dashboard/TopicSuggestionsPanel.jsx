@@ -3,7 +3,7 @@ import { Loader2, Plus } from "lucide-react";
 import { listProfiles, listCustomChannels, putLibraryVideos } from "@/adapters/localDb";
 import { YoutubeApiError, fetchChannelUploads } from "@/adapters/youtubeClient";
 import { youtubeSource } from "@/content/sources/youtubeSource";
-import { topicSuggestions, exerciseSuggestions } from "@/content/packs/topicSuggestions";
+import { topicSuggestions, exerciseSuggestions, nextSeed } from "@/content/packs/topicSuggestions";
 import { addParentChannel } from "@/app/channelPacks";
 import { nextChannelChoice } from "@/app/nextChoice";
 import { applyWhitelistGates } from "@/domain/gates";
@@ -123,11 +123,16 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
       const stored = await storeUploads(resolved.channelId, resolved.title || row.name, profile.ageGroup, row.language, row.category);
       const exclude = [...added, resolved.title || row.name, row.name];
       const excludeIds = [resolved.channelId, row.channelId].filter(Boolean);
+      const seed = nextSeed(row.category, exclude);
       setResolved((current) => {
         const copy = { ...current };
         delete copy[row.key];
         return copy;
       });
+      setReplacements((current) => ({
+        ...current,
+        [row.key]: { name: seed, query: seed, language: row.language, category: row.category, kind: row.kind },
+      }));
       const next = await nextChannelChoice({
         ageGroup: profile.ageGroup,
         language: row.language,
@@ -135,12 +140,12 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         exclude,
         excludeIds,
       });
-      setReplacements((current) => ({
-        ...current,
-        [row.key]: next && !excludeIds.includes(next.channelId)
-          ? { name: next.title, query: next.title, channelId: next.channelId, language: row.language, category: row.category, kind: row.kind }
-          : { name: "Looking for another channel", query: `${row.category} kids`, language: row.language, category: row.category, kind: row.kind },
-      }));
+      if (next && !excludeIds.includes(next.channelId) && !exclude.map((name) => name.toLowerCase()).includes((next.title || "").toLowerCase())) {
+        setReplacements((current) => ({
+          ...current,
+          [row.key]: { name: next.title, query: next.title, channelId: next.channelId, language: row.language, category: row.category, kind: row.kind },
+        }));
+      }
       if (!next) {
         nextChannelChoice({ ageGroup: profile.ageGroup, language: row.language, category: row.category, exclude }).then((later) => {
           if (!later) return;

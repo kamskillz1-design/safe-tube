@@ -55,3 +55,31 @@ export function exerciseSuggestions(ageGroup) {
   ];
   return rows.filter((row) => row.ages.includes(ageGroup)).map((row) => ({ ...row, language: "en", category: CATEGORIES.HEALTH_MOVEMENT, ageGroup }));
 }
+
+const SEEDS = {
+  IQRA: ["One4Kids", "YouQaria", "Zaky", "Muslim Kids TV"],
+  STEM: ["SciShow Kids", "Crash Course Kids", "National Geographic Kids", "FreeSchool"],
+  Arts: ["Art for Kids Hub", "Draw So Cute", "Kids Academy"],
+  Emotional_Intelligence: ["Sesame Street", "PBS Kids", "Cosmic Kids"],
+  Literacy_Language: ["Kids Academy", "Homeschool Pop", "Jack Hartmann"],
+  Nature_Animals: ["Nat Geo Kids", "FreeSchool", "National Geographic Kids"],
+  Life_Skills: ["PBS Kids", "Sesame Street", "Kids Academy"],
+  World_Cultures: ["National Geographic Kids", "FreeSchool", "Kids Academy"],
+  History: ["Crash Course Kids", "Homeschool Pop", "FreeSchool"],
+  Geography: ["National Geographic Kids", "FreeSchool", "Kids Academy"],
+  Coding_Technology: ["ScratchJr", "Code.org", "Khan Academy Kids"],
+  AI: ["SciShow Kids", "Crash Course Kids", "Khan Academy Kids"],
+  Film_Making: ["Khan Academy Kids", "Kids Academy", "Art for Kids Hub"],
+  Digital_Skills: ["Khan Academy Kids", "Code.org", "ScratchJr"],
+  Cooking_Food: ["Nerdy Nummies", "Kids Academy", "PBS Kids"],
+  Sports_Games: ["GoNoodle", "Cosmic Kids", "Jack Hartmann"],
+  Environmental_Awareness: ["SciShow Kids", "Nat Geo Kids", "FreeSchool"],
+  Health_Movement: ["GoNoodle", "Cosmic Kids", "Jack Hartmann"],
+  Self_Defense: ["Kids Academy", "PBS Kids", "Sesame Street"],
+};
+
+export function nextSeed(category, exclude = []) {
+  const taken = new Set(exclude.map((name) => String(name || "").toLowerCase()));
+  const list = SEEDS[category] || SEEDS.STEM;
+  return list.find((name) => !taken.has(name.toLowerCase())) || list[0];
+}
