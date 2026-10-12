@@ -4,7 +4,7 @@ import { fetchChannelUploads, resolveChannels } from "@/adapters/youtubeClient";
 import { libraryVideosForAge, putLibraryVideos } from "@/adapters/localDb";
 import { legacyCategoryToId } from "@/domain/categories";
 
-const PAUSE_MS = 12000;
+const PAUSE_MS = 6000;
 
 function allowed(video) {
   return video.category !== "Music_Dance" && !/music|dance|song/i.test(`${video.title} ${video.channelTitle}`);
@@ -22,9 +22,9 @@ export function startSlowInflow({ ageGroup, language = "en", onVideos }) {
       cursor += 1;
       const resolved = channel.channelId || (await resolveChannels([channel.name]))[0]?.channelId;
       if (!resolved) return;
-      const uploads = await fetchChannelUploads(resolved, 5);
+      const uploads = await fetchChannelUploads(resolved, 12);
       const stored = new Set((await libraryVideosForAge(ageGroup)).map((video) => video.id));
-      const fresh = applyWhitelistGates(uploads, ageGroup).filter((video) => allowed(video) && !stored.has(video.id)).slice(0, 2);
+      const fresh = applyWhitelistGates(uploads, ageGroup).filter((video) => allowed(video) && !stored.has(video.id)).slice(0, 6);
       if (!fresh.length) return;
       const now = new Date().toISOString();
       const rows = fresh.map((video) => ({

@@ -6,7 +6,7 @@ import { safeQuery } from "@/domain/safety";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const HINT = { es: "en español", fr: "en français", de: "auf Deutsch", zh: "中文", ar: "بالعربية", hi: "हिंदी", pt: "em português", ja: "日本語", ru: "на русском", it: "in italiano", ko: "한국어", tr: "Türkçe", eu: "euskara", id: "bahasa Indonesia", pl: "po polsku", ur: "in Urdu اردو" };
-const KEEP = 8;
+const KEEP = 20;
 const VIOLENT = /fight|weapon|gun|knife|blood|punch|kick|choke|strangle|mma|boxing|combat|attack|kill|wrestling/;
 
 const QUERY_BY_ID = {
@@ -111,7 +111,7 @@ export async function loadCategoryVideos(ageGroup, label, categoryId, languages 
     const term = safeQuery(`${base}${hint}`);
     if (!term) continue;
     await sleep(250);
-    const found = await searchVideos({ term, languageCode: language, maxResults: 8 });
+    const found = await searchVideos({ term, languageCode: language, maxResults: 12 });
     const rows = toRows(found, ageGroup, language, categoryId, label, selfDefense).filter((video) => !seen.has(video.id));
     rows.forEach((video) => seen.add(video.id));
     if (rows.length) await putLibraryVideos(rows);
@@ -137,8 +137,8 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
       const channels = (await defaultTrustedChannels()).filter((channel) => channel.ageGroup === ageGroup && channel.channelId && channel.primaryCategoryId === node.id);
       let batch = [];
       if ((languages[0] || "en") === "en") {
-        for (const channel of channels.slice(0, 2)) {
-          const uploads = await fetchChannelUploads(channel.channelId, 8);
+        for (const channel of channels.slice(0, 6)) {
+          const uploads = await fetchChannelUploads(channel.channelId, 12);
           batch.push(...toRows(uploads, ageGroup, "en", node.id, node.slug || "Learning", /self.?defense/i.test(node.id)));
         }
       }

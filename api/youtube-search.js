@@ -109,7 +109,7 @@ export default async function handler(req, res) {
     if (payload.action === "channelUploads") {
       const channelId = typeof payload.channelId === "string" ? payload.channelId.trim() : "";
       if (!/^UC[\w-]{22}$/.test(channelId)) return fail(res, "channelId must be a YouTube channel id.", "INVALID_INPUT");
-      const maxResults = Math.min(Math.max(Number(payload.maxResults) || 5, 1), 8);
+      const maxResults = Math.min(Math.max(Number(payload.maxResults) || 10, 1), 15);
       const channel = await ytFetch("/channels", { part: "contentDetails", id: channelId }, apiKey);
       const uploadsPlaylist = channel.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
       if (!uploadsPlaylist) return fail(res, "Channel not found.", "NOT_FOUND", 404);
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
       const term = safeQuery(payload.term);
       if (!term) return fail(res, "term is required.", "INVALID_INPUT");
       const languageCode = /^[a-z]{2}$/.test(payload.languageCode || "") ? payload.languageCode : "en";
-      const maxResults = Math.min(Math.max(Number(payload.maxResults) || 8, 1), 12);
+      const maxResults = Math.min(Math.max(Number(payload.maxResults) || 12, 1), 20);
       const region = REGION[languageCode];
       const search = await ytFetch("/search", { part: "snippet", q: term, type: "video", maxResults, relevanceLanguage: languageCode, safeSearch: "strict", videoEmbeddable: true, videoDuration: "medium", ...(region ? { regionCode: region } : {}) }, apiKey);
       const ids = (search.items || []).map((i) => i.id?.videoId).filter((id) => /^[\w-]{11}$/.test(id));
