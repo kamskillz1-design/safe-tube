@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (!supabaseUrl || !serviceKey) return res.status(200).json({ ok: true, videos: [] });
   const ageGroup = /^[a-z0-9_]+$/.test(req.query.ageGroup || "") ? req.query.ageGroup : "";
   const filter = ageGroup ? `&age_group=eq.${ageGroup}` : "";
-  const response = await fetch(`${supabaseUrl}/rest/v1/catalog_videos?approved=eq.true${filter}&select=*&order=id.desc&limit=300`, {
+  const response = await fetch(`${supabaseUrl}/rest/v1/catalog_videos?approved=eq.true${filter}&select=*&order=id.desc&limit=800`, {
     headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
   });
   if (!response.ok) return res.status(200).json({ ok: true, videos: [] });
