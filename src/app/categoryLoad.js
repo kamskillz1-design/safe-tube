@@ -152,6 +152,10 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
         }
       }
       if (batch.length < 4) batch.push(...await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, languages));
+      const extraLanguage = ["es", "fr", "ar", "ur", "hi"][new Date().getUTCDate() % 5];
+      if ((languages[0] || "en") === "en" && batch.length < KEEP) {
+        batch.push(...await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, [extraLanguage]));
+      }
       const taken = new Set(existing.map((video) => video.id));
       const fresh = batch.filter((video) => video.categoryId === node.id && !taken.has(video.id));
       if (fresh.length) onBatch?.(fresh);
