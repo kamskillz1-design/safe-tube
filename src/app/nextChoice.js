@@ -19,14 +19,16 @@ export function choiceQuery(category, ageGroup, language) {
   return safeQuery(`${label} for ${age}${hint}`) || safeQuery(`${label} for kids`);
 }
 
-export async function nextChannelChoice({ ageGroup, language = "en", category = CATEGORIES.STEM, exclude = [] }) {
+export async function nextChannelChoice({ ageGroup, language = "en", category = CATEGORIES.STEM, exclude = [], excludeIds = [] }) {
   const taken = new Set(exclude.map((name) => String(name || "").toLowerCase()));
-  const queries = [choiceQuery(category, ageGroup, language), choiceQuery(category, ageGroup, language) + " channel"].filter(Boolean);
+  const takenIds = new Set(excludeIds.filter(Boolean));
+  const base = choiceQuery(category, ageGroup, language);
+  const queries = [base, `${base} channel`, `${String(category).replaceAll("_", " ")} kids`].filter(Boolean);
   for (const query of queries) {
     const found = await suggestChannels(query, language);
     const next = found.find((channel) => {
       const name = channel.title || channel.name;
-      if (!channel.channelId || !name || taken.has(name.toLowerCase())) return false;
+      if (!channel.channelId || takenIds.has(channel.channelId) || !name || taken.has(name.toLowerCase())) return false;
       return passesKeywordBlocker({ title: name, description: channel.description || query });
     });
     if (next) return next;

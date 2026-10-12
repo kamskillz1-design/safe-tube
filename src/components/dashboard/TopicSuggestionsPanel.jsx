@@ -60,9 +60,10 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
       category,
       kind: "topic",
     };
-    const row = replacement || found || fallback;
+    const row = replacement || (!taken.has((found?.name || "").toLowerCase()) ? found : null) || fallback;
+    if (taken.has(row.name.toLowerCase()) && !replacement) return null;
     return { ...row, key };
-  })).filter((row) => replacements[row.key] || !taken.has(row.name.toLowerCase()));
+  })).filter(Boolean);
 
   const refresh = async () => {
     const [nextProfiles, channels] = await Promise.all([listProfiles(), listCustomChannels()]);
@@ -120,18 +121,25 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         status: "approved",
       });
       const stored = await storeUploads(resolved.channelId, resolved.title || row.name, profile.ageGroup, row.language, row.category);
-      const exclude = [...added, resolved.title || row.name];
+      const exclude = [...added, resolved.title || row.name, row.name];
+      const excludeIds = [resolved.channelId, row.channelId].filter(Boolean);
+      setResolved((current) => {
+        const copy = { ...current };
+        delete copy[row.key];
+        return copy;
+      });
       const next = await nextChannelChoice({
         ageGroup: profile.ageGroup,
         language: row.language,
         category: row.category,
         exclude,
+        excludeIds,
       });
       setReplacements((current) => ({
         ...current,
-        [row.key]: next
+        [row.key]: next && !excludeIds.includes(next.channelId)
           ? { name: next.title, query: next.title, channelId: next.channelId, language: row.language, category: row.category, kind: row.kind }
-          : { name: "Looking for another channel", query: `${row.category} for kids`, language: row.language, category: row.category, kind: row.kind },
+          : { name: "Looking for another channel", query: `${row.category} kids`, language: row.language, category: row.category, kind: row.kind },
       }));
       if (!next) {
         nextChannelChoice({ ageGroup: profile.ageGroup, language: row.language, category: row.category, exclude }).then((later) => {
