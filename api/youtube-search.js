@@ -3,6 +3,45 @@ const fail = (res, error, code, status = 400) => res.status(status).json({ ok: f
 const ok = (res, data) => res.status(200).json({ ok: true, ...data });
 const DANGER = ["weapon", "knife", "gun", "firearm", "choke", "strangle", "bomb", "explosive"];
 
+
+const SCRIPT = {
+  zh: /[\u4e00-\u9fff]/,
+  ja: /[\u3040-\u30ff]/,
+  ko: /[\uac00-\ud7af]/,
+  ar: /[\u0600-\u06ff]/,
+  ur: /[\u0600-\u06ff]/,
+  hi: /[\u0900-\u097f]/,
+  ru: /[\u0400-\u04ff]/,
+};
+const WORDS = {
+  es: /español|ninos|niños|para ninos|aprende/,
+  fr: /français|francais|enfants|pour les/,
+  de: /deutsch|kinder|für kinder/,
+  pt: /português|portugues|crianças|para crianças/,
+  it: /italiano|bambini|per bambini/,
+  tr: /türkçe|turkce|çocuk/,
+  pl: /polsku|dzieci|dla dzieci/,
+  id: /bahasa indonesia|anak/,
+  eu: /euskara|haurrentzat/,
+  zh: /中文|儿童/,
+  ar: /بالعربية|أطفال/,
+  hi: /हिंदी|बच्चे/,
+  ja: /日本語|子ども/,
+  ko: /한국어|어린이/,
+  ru: /русском|дети/,
+  ur: /اردو|بچوں/,
+};
+const REGION = { es: "ES", fr: "FR", de: "DE", zh: "TW", ar: "SA", hi: "IN", pt: "BR", ja: "JP", ru: "RU", it: "IT", ko: "KR", tr: "TR", id: "ID", pl: "PL", ur: "PK", eu: "ES" };
+
+function matchesLanguage(video, languageCode) {
+  if (!languageCode || languageCode === "en") return true;
+  const audio = String(video.language || "").slice(0, 2).toLowerCase();
+  if (audio === languageCode) return true;
+  const text = `${video.title || ""} ${video.description || ""}`;
+  if (SCRIPT[languageCode]?.test(text)) return true;
+  return Boolean(WORDS[languageCode]?.test(text.toLowerCase()));
+}
+
 function plain(value, max) {
   return String(value || "").replace(/<[^>]*>/g, "").replace(/javascript:/gi, "").replace(/data:/gi, "").trim().slice(0, max);
 }
