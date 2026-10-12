@@ -5,26 +5,26 @@ const older = [AGE_GROUPS.TWEEN, AGE_GROUPS.TEEN];
 const fromEarly = [AGE_GROUPS.EARLY_LEARNER, ...older];
 
 const TOPICS = [
-  { category: CATEGORIES.IQRA, label: "IQRA", ages: all, q: "Quran for kids" },
-  { category: CATEGORIES.STEM, label: "Science", ages: all, q: "science for kids" },
-  { category: CATEGORIES.ARTS, label: "Art", ages: all, q: "art for kids" },
-  { category: CATEGORIES.EMOTIONAL_INTELLIGENCE, label: "Feelings", ages: all, q: "feelings for kids" },
-  { category: CATEGORIES.LITERACY_LANGUAGE, label: "Reading", ages: all, q: "reading for kids" },
-  { category: CATEGORIES.NATURE_ANIMALS, label: "Animals", ages: all, q: "animals for kids" },
-  { category: CATEGORIES.LIFE_SKILLS, label: "Life skills", ages: all, q: "life skills for kids" },
-  { category: CATEGORIES.WORLD_CULTURES, label: "Cultures", ages: all, q: "world cultures for kids" },
-  { category: CATEGORIES.HISTORY, label: "History", ages: older, q: "history for kids" },
-  { category: CATEGORIES.GEOGRAPHY, label: "Geography", ages: older, q: "geography for kids" },
-  { category: CATEGORIES.CODING_TECHNOLOGY, label: "Coding", ages: older, q: "coding for kids" },
-  { category: CATEGORIES.AI, label: "AI", ages: older, q: "artificial intelligence for kids" },
-  { category: CATEGORIES.FILM_MAKING, label: "Film making", ages: older, q: "film making for kids" },
-  { category: CATEGORIES.DIGITAL_SKILLS, label: "Digital skills", ages: fromEarly, q: "digital skills for kids" },
-  { category: CATEGORIES.COOKING_FOOD, label: "Cooking", ages: fromEarly, q: "cooking for kids" },
-  { category: CATEGORIES.SPORTS_GAMES, label: "Sports", ages: fromEarly, q: "sports for kids" },
-  { category: CATEGORIES.ENVIRONMENTAL_AWARENESS, label: "Nature care", ages: all, q: "environment for kids" },
-  { category: CATEGORIES.HEALTH_MOVEMENT, label: "Exercise", ages: all, kind: "exercise", q: "exercise for kids" },
-  { category: CATEGORIES.SELF_DEFENSE, label: "Self-defense", ages: older, kind: "defense", q: "self defense basics for teenagers awareness" },
-  { category: CATEGORIES.SELF_DEFENSE, label: "Body safety", ages: [AGE_GROUPS.TODDLER, AGE_GROUPS.EARLY_LEARNER], kind: "defense", q: "body safety for kids" },
+  { category: CATEGORIES.IQRA, label: "IQRA", channel: "One4Kids", ages: all, q: "One4Kids Quran" },
+  { category: CATEGORIES.STEM, label: "Science", channel: "SciShow Kids", ages: all, q: "SciShow Kids" },
+  { category: CATEGORIES.ARTS, label: "Art", channel: "Art for Kids Hub", ages: all, q: "Art for Kids Hub" },
+  { category: CATEGORIES.EMOTIONAL_INTELLIGENCE, label: "Feelings", channel: "Sesame Street", ages: all, q: "Sesame Street feelings" },
+  { category: CATEGORIES.LITERACY_LANGUAGE, label: "Reading", channel: "Kids Academy", ages: all, q: "Kids Academy reading" },
+  { category: CATEGORIES.NATURE_ANIMALS, label: "Animals", channel: "Nat Geo Kids", ages: all, q: "Nat Geo Kids" },
+  { category: CATEGORIES.LIFE_SKILLS, label: "Life skills", channel: "PBS Kids", ages: all, q: "PBS Kids life skills" },
+  { category: CATEGORIES.WORLD_CULTURES, label: "Cultures", channel: "National Geographic Kids", ages: all, q: "National Geographic Kids cultures" },
+  { category: CATEGORIES.HISTORY, label: "History", channel: "Crash Course Kids", ages: older, q: "Crash Course Kids history" },
+  { category: CATEGORIES.GEOGRAPHY, label: "Geography", channel: "National Geographic Kids", ages: older, q: "National Geographic Kids geography" },
+  { category: CATEGORIES.CODING_TECHNOLOGY, label: "Coding", channel: "ScratchJr", ages: older, q: "ScratchJr" },
+  { category: CATEGORIES.AI, label: "AI", channel: "SciShow Kids", ages: older, q: "SciShow Kids technology" },
+  { category: CATEGORIES.FILM_MAKING, label: "Film making", channel: "Khan Academy Kids", ages: older, q: "Khan Academy Kids film" },
+  { category: CATEGORIES.DIGITAL_SKILLS, label: "Digital skills", channel: "Khan Academy Kids", ages: fromEarly, q: "Khan Academy Kids computer" },
+  { category: CATEGORIES.COOKING_FOOD, label: "Cooking", channel: "Nerdy Nummies", ages: fromEarly, q: "Nerdy Nummies kids" },
+  { category: CATEGORIES.SPORTS_GAMES, label: "Sports", channel: "GoNoodle", ages: fromEarly, q: "GoNoodle" },
+  { category: CATEGORIES.ENVIRONMENTAL_AWARENESS, label: "Nature care", channel: "SciShow Kids", ages: all, q: "SciShow Kids environment" },
+  { category: CATEGORIES.HEALTH_MOVEMENT, label: "Exercise", channel: "GoNoodle", ages: all, kind: "exercise", q: "GoNoodle" },
+  { category: CATEGORIES.SELF_DEFENSE, label: "Self-defense", channel: "Kids Academy", ages: older, kind: "defense", q: "body safety for kids" },
+  { category: CATEGORIES.SELF_DEFENSE, label: "Body safety", channel: "Kids Academy", ages: [AGE_GROUPS.TODDLER, AGE_GROUPS.EARLY_LEARNER], kind: "defense", q: "body safety for kids" },
 ];
 
 const LANG = {
@@ -35,8 +35,8 @@ export function topicSuggestions(languages, ageGroup) {
   const codes = [...new Set(["en", ...(languages || [])].map((code) => String(code).slice(0, 2).toLowerCase()))].filter(Boolean);
   return codes.flatMap((language) =>
     TOPICS.filter((topic) => topic.ages.includes(ageGroup)).map((topic) => ({
-      name: `${topic.label} (${language.toUpperCase()})`,
-      query: `${topic.q} ${LANG[language] || language}`,
+      name: language === "en" ? topic.channel || topic.label : `${topic.channel || topic.label}`,
+      query: `${topic.q} ${language === "en" ? "" : LANG[language] || language}`.trim(),
       language,
       category: topic.category,
       kind: topic.kind || "topic",
