@@ -43,7 +43,10 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   const [instruction, setInstruction] = useState(() => readJson(memoryKey(ageGroup), {}).language || languages[0] || "en");
   useEffect(() => {
     const code = languages[0];
-    if (code && code !== instruction) setInstruction(code);
+    if (code && code !== instruction) {
+      setInstruction(code);
+      setNotice(`Looking for ${code.toUpperCase()} videos.`);
+    }
   }, [languages[0]]);
   const [suggestions, setSuggestions] = useState([]);
   const [blocked, setBlocked] = useState(new Set());

@@ -106,10 +106,10 @@ export default async function handler(req, res) {
       const videos = (details.items || []).map(toVideo);
       if (languageCode === "en") return ok(res, { videos });
       const audio = (video) => String(video.language || "").slice(0, 2).toLowerCase();
-      const matched = videos.filter((video) => audio(video) === languageCode);
-      if (matched.length) return ok(res, { videos: matched });
-      const fallback = videos.filter((video) => !audio(video) || audio(video) === "en").map((video) => ({ ...video, languageFallback: true }));
-      return ok(res, { videos: fallback });
+      const script = /[\u0600-\u06FF]/;
+      const matched = videos.filter((video) => audio(video) === languageCode || (["ur", "ar"].includes(languageCode) && script.test(`${video.title || ""} ${video.description || ""}`)));
+      if (matched.length) return ok(res, { videos: matched.map((video) => ({ ...video, language: languageCode, languageFallback: false })) });
+      return ok(res, { videos: [] });
     }
     if (payload.action === "videoById") {
       const id = typeof payload.videoId === "string" ? payload.videoId.trim() : "";
