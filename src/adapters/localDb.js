@@ -97,8 +97,11 @@ export const clearWatchedHistory = (profileId) =>
 export const listLibraryChannels = () => db.libraryChannels.toArray();
 export const putLibraryChannel = (channel) => db.libraryChannels.put(channel);
 export const listLibraryVideos = () => db.libraryVideos.toArray();
-export const libraryVideosForAge = (ageGroup) =>
-  db.libraryVideos.where("ageGroup").equals(ageGroup).toArray();
+export const libraryVideosForAge = async (ageGroup) => {
+  const { durationGate, ageContentGate } = await import("@/domain/gates");
+  const videos = await db.libraryVideos.toArray();
+  return videos.filter((video) => durationGate(video.durationSeconds, ageGroup) && ageContentGate(video, ageGroup));
+};
 export const putLibraryVideos = (videos) => db.libraryVideos.bulkPut(videos);
 export const deleteLibraryVideo = (id) => db.libraryVideos.delete(id);
 

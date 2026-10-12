@@ -1,5 +1,5 @@
 import { ALL_AGE_GROUPS, ENTERTAINMENT_CATEGORY } from "@/domain/constants";
-import { applyWhitelistGates } from "@/domain/gates";
+import { applyWhitelistGates, durationGate, ageContentGate } from "@/domain/gates";
 import { whitelistForAge } from "@/data/whitelist";
 import { activeRegistryForAge, confirmedChannelsForAge } from "@/app/vetting";
 import { ensureCategoryMigration } from "@/app/categories";
@@ -264,7 +264,7 @@ export async function refreshLibrary({ manual = false } = {}) {
   const targets = [];
   for (const group of ALL_AGE_GROUPS) {
     const have = await libraryVideosForAge(group);
-    if (have.length > 0) continue;
+    if (have.length >= 40) continue;
     targets.push(...trusted.filter((s) => s.ageGroup === group).slice(0, REFRESH_NEW_CHANNELS));
     targets.push(...extras.filter((s) => s.ageGroup === group).slice(0, REFRESH_NEW_CHANNELS));
   }
@@ -304,7 +304,9 @@ export async function libraryStats() {
   const byLanguage = new Map();
   videos.forEach((v) => {
     tally(byCategory, v.category);
-    tally(byAge, v.ageGroup);
+    ALL_AGE_GROUPS.forEach((age) => {
+      if (durationGate(v.durationSeconds, age) && ageContentGate(v, age)) tally(byAge, age);
+    });
     tally(byLanguage, (v.language || "en").slice(0, 2));
   });
   return {
