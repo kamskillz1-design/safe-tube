@@ -122,8 +122,9 @@ export default function Watch() {
 
   const chooseLanguage = (code) => {
     setWatchLanguage(code);
-    const loaded = profileRef.current;
-    if (loaded && libraryVideos.length) buildFrom(loaded, libraryVideos, code);
+    setQueue([]);
+    setQueueIndex(0);
+    setSuggested([]);
   };
 
   useEffect(() => {

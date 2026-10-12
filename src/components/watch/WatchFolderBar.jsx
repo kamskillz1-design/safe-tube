@@ -28,9 +28,7 @@ function unique(videos) {
 }
 function forLanguage(videos, language) {
   if (!language || language === "en") return videos;
-  const matched = videos.filter((video) => (video.language || "en") === language && !video.languageFallback);
-  if (matched.length) return matched;
-  return videos.filter((video) => video.languageFallback || (video.language || "en") === "en");
+  return videos.filter((video) => (video.language || "en") === language && !video.languageFallback);
 }
 
 export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], readingLevel = "letters", onFilter, t, hideSuggestions = false, onSuggestionsChange }) {
@@ -43,6 +41,10 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   const [extra, setExtra] = useState([]);
   const [notice, setNotice] = useState("Videos for this category will load over time.");
   const [instruction, setInstruction] = useState(() => readJson(memoryKey(ageGroup), {}).language || languages[0] || "en");
+  useEffect(() => {
+    const code = languages[0];
+    if (code && code !== instruction) setInstruction(code);
+  }, [languages[0]]);
   const [suggestions, setSuggestions] = useState([]);
   const [blocked, setBlocked] = useState(new Set());
   const group = ageGroup || videos[0]?.ageGroup;
