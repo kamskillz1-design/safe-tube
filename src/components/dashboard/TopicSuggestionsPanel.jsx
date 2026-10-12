@@ -39,17 +39,19 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
   const [added, setAdded] = useState([]);
   const [replacements, setReplacements] = useState({});
   const [resolved, setResolved] = useState({});
+  const [addedByAge, setAddedByAge] = useState({});
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState(null);
 
   const profile = profiles.find((item) => item.id === profileId) ?? profiles[0] ?? null;
   const languages = [...new Set(["en", ...(profile?.targetLanguages || [])].map((code) => String(code).slice(0, 2).toLowerCase()))];
-  const taken = new Set(added.map((name) => name.toLowerCase()));
+  const taken = new Set((addedByAge[profile?.ageGroup] || []).map((name) => name.toLowerCase()));
+  const slotKey = (category, language) => `${profile?.id || "none"}:${category}:${language}`;
   const base = profile
     ? [...exerciseSuggestions(profile.ageGroup), ...topicSuggestions(languages, profile.ageGroup)]
     : [];
   const slots = EDUCATIONAL_CATEGORIES.flatMap((category) => languages.map((language) => {
-    const key = `${category}:${language}`;
+    const key = slotKey(category, language);
     const existing = base.find((row) => row.category === category && row.language === language && !taken.has(row.name.toLowerCase()));
     const replacement = replacements[key];
     const found = resolved[key];
@@ -69,6 +71,11 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
     const [nextProfiles, channels] = await Promise.all([listProfiles(), listCustomChannels()]);
     setProfiles(nextProfiles);
     setAdded(channels.map((row) => row.name));
+    setAddedByAge(channels.reduce((map, row) => {
+      const age = row.ageGroup || "all";
+      map[age] = [...(map[age] || []), row.name];
+      return map;
+    }, {}));
   };
 
   useEffect(() => {
