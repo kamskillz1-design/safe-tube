@@ -3,9 +3,9 @@ const BLOCKED = ["weapon", "gun", "knife", "prank", "scary", "horror", "blood", 
 const AGES = ["toddler_2_4", "early_learner_5_7", "tween_8_12", "teen_13_16"];
 const LANGS = ["en", "es", "fr", "ar", "ur", "hi"];
 const CATEGORIES = [
-  ["cat_stem", "STEM", "science for kids", ["UCsooa4yRKGN_zEE8iknghZA", "UCXVCgDuD_QCkI7gTKU7-tpg"]],
-  ["cat_arts", "Arts", "art lessons for kids", ["UC_sG8eOqJqJqJqJqJqJqJqJ"]],
-  ["cat_nature_animals", "Nature_Animals", "animals for kids", ["UCDPk9xK6n_n2Xk2k2k2k2k2k"]],
+  ["cat_stem", "STEM", "science for kids", []],
+  ["cat_arts", "Arts", "art lessons for kids", []],
+  ["cat_nature_animals", "Nature_Animals", "animals for kids", []],
   ["cat_life_skills", "Life_Skills", "life skills for kids", []],
   ["cat_literacy_language", "Literacy_Language", "reading for kids", []],
   ["cat_health_movement", "Health_Movement", "exercise for kids", []],
