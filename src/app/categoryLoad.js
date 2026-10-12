@@ -6,7 +6,7 @@ import { safeQuery } from "@/domain/safety";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const HINT = { es: "en español", fr: "en français", de: "auf Deutsch", zh: "中文", ar: "بالعربية", hi: "हिंदी", pt: "em português", ja: "日本語", ru: "на русском", it: "in italiano", ko: "한국어", tr: "Türkçe", eu: "euskara", id: "bahasa Indonesia", pl: "po polsku", ur: "in Urdu اردو" };
-const KEEP = 20;
+const KEEP = 100;
 const VIOLENT = /fight|weapon|gun|knife|blood|punch|kick|choke|strangle|mma|boxing|combat|attack|kill|wrestling/;
 
 const QUERY_BY_ID = {
@@ -133,7 +133,7 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
       cursor += 1;
       const existing = getExisting?.() || [];
       const have = existing.filter((video) => video.categoryId === node.id);
-      if (have.length >= KEEP) return;
+      if (have.length >= 200) return;
       const channels = (await defaultTrustedChannels()).filter((channel) => channel.ageGroup === ageGroup && channel.channelId && channel.primaryCategoryId === node.id);
       let batch = [];
       if ((languages[0] || "en") === "en") {

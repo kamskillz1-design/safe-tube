@@ -21,7 +21,7 @@ const SCANNED_KEY = "library:scanned";
 const IDS_KEY = "channelIds";
 const FIRST_PAINT_CHANNELS = 2;
 const BACKGROUND_BATCH = 1;
-const REFRESH_NEW_CHANNELS = 2;
+const REFRESH_NEW_CHANNELS = 8;
 const UPLOADS_PER_CHANNEL = 5;
 const PAUSE_MS = 2000;
 const AUTO_REFRESH_MS = 24 * 60 * 60 * 1000;
@@ -261,13 +261,10 @@ export async function refreshLibrary({ manual = false } = {}) {
 
   const trusted = await defaultTrustedChannels();
   const extras = await parentChannels();
-  const targets = [];
-  for (const group of ALL_AGE_GROUPS) {
-    const have = await libraryVideosForAge(group);
-    if (have.length >= 40) continue;
-    targets.push(...trusted.filter((s) => s.ageGroup === group).slice(0, REFRESH_NEW_CHANNELS));
-    targets.push(...extras.filter((s) => s.ageGroup === group).slice(0, REFRESH_NEW_CHANNELS));
-  }
+  const scanned = new Set((await getCached(SCANNED_KEY)) ?? []);
+  const pending = [...trusted, ...extras].filter((channel) => !scanned.has(scanKey(channel)) && !channel.channelId);
+  const known = [...trusted, ...extras].filter((channel) => channel.channelId && !scanned.has(scanKey(channel)));
+  const targets = [...known, ...pending].slice(0, REFRESH_NEW_CHANNELS);
 
   let added = 0;
   let quotaIssue = false;
