@@ -109,12 +109,19 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
   const add = async (row) => {
     setBusy(row.key);
     setNotice(null);
+    const exclude = [...(addedByAge[profile.ageGroup] || []), row.name];
+    const seed = nextSeed(row.category, exclude, row.name);
+    setReplacements((current) => ({
+      ...current,
+      [row.key]: { name: seed, query: seed, language: row.language, category: row.category, kind: row.kind },
+    }));
+    setNotice(`${row.name} is being added. ${seed} is the new choice.`);
     try {
       const resolved = row.channelId
         ? { channelId: row.channelId, title: row.name }
         : await youtubeSource.resolveChannel(row.query || row.name);
       if (!resolved?.channelId) {
-        setNotice("That suggestion could not be found. Paste the channel below.");
+        setNotice(`${row.name} could not be found, so it was not saved. ${seed} is the new choice.`);
         return;
       }
       await addParentChannel({ ageGroup: profile.ageGroup, nativeLanguage: row.language }, {
@@ -127,19 +134,13 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         categories: [row.category || CATEGORIES.STEM],
         status: "approved",
       });
-      const stored = await storeUploads(resolved.channelId, resolved.title || row.name, profile.ageGroup, row.language, row.category);
-      const exclude = [...(addedByAge[profile.ageGroup] || []), resolved.title || row.name, row.name];
+      const stored = await storeUploads(resolved.channelId, resolved.title || row.name, profile.ageGroup, row.language, row.category).catch(() => 0);
       const excludeIds = [resolved.channelId, row.channelId].filter(Boolean);
-      const seed = nextSeed(row.category, exclude, row.name);
       setResolved((current) => {
         const copy = { ...current };
         delete copy[row.key];
         return copy;
       });
-      setReplacements((current) => ({
-        ...current,
-        [row.key]: { name: seed, query: seed, language: row.language, category: row.category, kind: row.kind },
-      }));
       const next = await nextChannelChoice({
         ageGroup: profile.ageGroup,
         language: row.language,
@@ -159,7 +160,7 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
           setReplacements((current) => ({ ...current, [row.key]: { name: later.title, query: later.title, channelId: later.channelId, language: row.language, category: row.category, kind: row.kind } }));
         }).catch(() => {});
       }
-      setNotice(`${resolved.title || row.name} was added${stored ? ` with ${stored} videos` : ""}. A new choice is in its place.`);
+      setNotice(`${resolved.title || row.name} was added${stored ? ` with ${stored} videos` : ""}. ${seed} is now in its place.`);
       await refresh();
       onChanged?.();
     } catch (error) {
