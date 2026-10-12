@@ -128,9 +128,9 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         status: "approved",
       });
       const stored = await storeUploads(resolved.channelId, resolved.title || row.name, profile.ageGroup, row.language, row.category);
-      const exclude = [...added, resolved.title || row.name, row.name];
+      const exclude = [...(addedByAge[profile.ageGroup] || []), resolved.title || row.name, row.name];
       const excludeIds = [resolved.channelId, row.channelId].filter(Boolean);
-      const seed = nextSeed(row.category, exclude);
+      const seed = nextSeed(row.category, exclude, row.name);
       setResolved((current) => {
         const copy = { ...current };
         delete copy[row.key];

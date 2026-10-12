@@ -78,8 +78,9 @@ const SEEDS = {
   Self_Defense: ["Kids Academy", "PBS Kids", "Sesame Street"],
 };
 
-export function nextSeed(category, exclude = []) {
+export function nextSeed(category, exclude = [], current = "") {
   const taken = new Set(exclude.map((name) => String(name || "").toLowerCase()));
   const list = SEEDS[category] || SEEDS.STEM;
-  return list.find((name) => !taken.has(name.toLowerCase())) || list[0];
+  const next = list.find((name) => !taken.has(name.toLowerCase()) && name.toLowerCase() !== current.toLowerCase());
+  return next || list.find((name) => name.toLowerCase() !== current.toLowerCase()) || list[0];
 }
