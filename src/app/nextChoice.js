@@ -21,14 +21,15 @@ export function choiceQuery(category, ageGroup, language) {
 
 export async function nextChannelChoice({ ageGroup, language = "en", category = CATEGORIES.STEM, exclude = [] }) {
   const taken = new Set(exclude.map((name) => String(name || "").toLowerCase()));
-  const query = choiceQuery(category, ageGroup, language);
-  if (!query) return null;
-  const found = await suggestChannels(query, language);
-  return (
-    found.find((channel) => {
+  const queries = [choiceQuery(category, ageGroup, language), choiceQuery(category, ageGroup, language) + " channel"].filter(Boolean);
+  for (const query of queries) {
+    const found = await suggestChannels(query, language);
+    const next = found.find((channel) => {
       const name = channel.title || channel.name;
       if (!channel.channelId || !name || taken.has(name.toLowerCase())) return false;
       return passesKeywordBlocker({ title: name, description: channel.description || query });
-    }) || null
-  );
+    });
+    if (next) return next;
+  }
+  return null;
 }

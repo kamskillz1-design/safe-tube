@@ -62,7 +62,7 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
     };
     const row = replacement || found || fallback;
     return { ...row, key };
-  })).filter((row) => !taken.has(row.name.toLowerCase()));
+  })).filter((row) => replacements[row.key] || !taken.has(row.name.toLowerCase()));
 
   const refresh = async () => {
     const [nextProfiles, channels] = await Promise.all([listProfiles(), listCustomChannels()]);
@@ -131,8 +131,14 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         ...current,
         [row.key]: next
           ? { name: next.title, query: next.title, channelId: next.channelId, language: row.language, category: row.category, kind: row.kind }
-          : null,
+          : { name: "Looking for another channel", query: `${row.category} for kids`, language: row.language, category: row.category, kind: row.kind },
       }));
+      if (!next) {
+        nextChannelChoice({ ageGroup: profile.ageGroup, language: row.language, category: row.category, exclude }).then((later) => {
+          if (!later) return;
+          setReplacements((current) => ({ ...current, [row.key]: { name: later.title, query: later.title, channelId: later.channelId, language: row.language, category: row.category, kind: row.kind } }));
+        }).catch(() => {});
+      }
       setNotice(`${resolved.title || row.name} was added${stored ? ` with ${stored} videos` : ""}. A new choice is in its place.`);
       await refresh();
       onChanged?.();
