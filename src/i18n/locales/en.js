@@ -167,9 +167,9 @@ export default {
 
   "curator.addTitle": "Add a channel",
   "curator.addText": "Paste a YouTube channel link (youtube.com/@name) or channel ID. Videos from it appear in this age group's feed.",
-  "curator.placeholder": "youtube.com/@channelname or UC…",
+  "curator.placeholder": "Channel name, @handle, or YouTube link",
   "curator.add": "Add",
-  "curator.errorParse": "Paste a YouTube channel link (with a @handle) or a channel ID (UC…).",
+  "curator.errorParse": "Type a channel name, @handle, or paste a YouTube channel link.",
   "curator.errorNotFound": "That channel could not be found on YouTube.",
   "curator.added": "{name} was added to this age group's feed.",
   "curator.errorGeneric": "Something went wrong adding that channel. Please try again.",

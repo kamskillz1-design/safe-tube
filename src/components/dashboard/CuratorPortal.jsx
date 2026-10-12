@@ -18,11 +18,14 @@ import CategoryPicker, { categoryPathLabel } from "@/components/dashboard/Catego
 
 const parseChannelInput = (input) => {
   const value = input.trim();
+  if (!value) return null;
   const idMatch = value.match(/(UC[\w-]{20,})/);
   if (idMatch) return { channelId: idMatch[1] };
   const handleMatch = value.match(/@([\w.-]+)/);
   if (handleMatch) return { handle: handleMatch[1] };
-  return null;
+  const pathMatch = value.match(/youtube\.com\/(?:c|user|channel)\/([^/?#]+)/i);
+  if (pathMatch) return { handle: decodeURIComponent(pathMatch[1]) };
+  return { handle: value.replace(/^https?:\/\//, "").slice(0, 80) };
 };
 
 export default function CuratorPortal() {
