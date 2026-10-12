@@ -98,18 +98,15 @@ export default async function handler(req, res) {
       if (!term) return fail(res, "term is required.", "INVALID_INPUT");
       const languageCode = /^[a-z]{2}$/.test(payload.languageCode || "") ? payload.languageCode : "en";
       const maxResults = Math.min(Math.max(Number(payload.maxResults) || 8, 1), 12);
-      const region = { ur: "PK", ar: "SA", hi: "IN", bn: "BD", fr: "FR", es: "ES", tr: "TR", id: "ID" }[languageCode];
+      const region = REGION[languageCode];
       const search = await ytFetch("/search", { part: "snippet", q: term, type: "video", maxResults, relevanceLanguage: languageCode, safeSearch: "strict", videoEmbeddable: true, videoDuration: "medium", ...(region ? { regionCode: region } : {}) }, apiKey);
       const ids = (search.items || []).map((i) => i.id?.videoId).filter((id) => /^[\w-]{11}$/.test(id));
       if (!ids.length) return ok(res, { videos: [] });
       const details = await ytFetch("/videos", { part: "snippet,contentDetails,statistics", id: ids.join(",") }, apiKey);
       const videos = (details.items || []).map(toVideo);
       if (languageCode === "en") return ok(res, { videos });
-      const audio = (video) => String(video.language || "").slice(0, 2).toLowerCase();
-      const script = /[\u0600-\u06FF]/;
-      const matched = videos.filter((video) => audio(video) === languageCode || (["ur", "ar"].includes(languageCode) && script.test(`${video.title || ""} ${video.description || ""}`)));
-      if (matched.length) return ok(res, { videos: matched.map((video) => ({ ...video, language: languageCode, languageFallback: false })) });
-      return ok(res, { videos: [] });
+      const matched = videos.filter((video) => matchesLanguage(video, languageCode));
+      return ok(res, { videos: matched.map((video) => ({ ...video, language: languageCode, languageFallback: false })) });
     }
     if (payload.action === "videoById") {
       const id = typeof payload.videoId === "string" ? payload.videoId.trim() : "";
