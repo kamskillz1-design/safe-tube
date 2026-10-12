@@ -1,5 +1,5 @@
 import { applyWhitelistGates, passesKeywordBlocker } from "@/domain/gates";
-import { fetchChannelUploads, searchVideos } from "@/adapters/youtubeClient";
+import { fetchChannelUploads, searchVideos, suggestChannels } from "@/adapters/youtubeClient";
 import { defaultTrustedChannels } from "@/app/library";
 import { libraryVideosForAge, putLibraryVideos } from "@/adapters/localDb";
 import { safeQuery } from "@/domain/safety";
@@ -140,6 +140,15 @@ export function startCategoryFill({ ageGroup, languages = ["en"], tree = [], get
         for (const channel of channels.slice(0, 6)) {
           const uploads = await fetchChannelUploads(channel.channelId, 12);
           batch.push(...toRows(uploads, ageGroup, "en", node.id, node.slug || "Learning", /self.?defense/i.test(node.id)));
+        }
+      }
+      if (batch.length < KEEP) {
+        const language = languages[0] || "en";
+        const found = await suggestChannels(`${node.slug || "learning"} for kids`, language);
+        for (const channel of found.slice(0, 4)) {
+          if (!channel.channelId) continue;
+          const uploads = await fetchChannelUploads(channel.channelId, 8);
+          batch.push(...toRows(uploads, ageGroup, language, node.id, node.slug || "Learning", /self.?defense/i.test(node.id)));
         }
       }
       if (batch.length < 4) batch.push(...await loadCategoryVideos(ageGroup, node.slug || "Learning", node.id, languages));
