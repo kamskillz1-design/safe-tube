@@ -46,13 +46,22 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     if (!code || code === instruction) return undefined;
     setInstruction(code);
     setNotice(`Looking for ${code.toUpperCase()} videos.`);
-    if (!group || !selectedId) return undefined;
+    if (!group) return undefined;
     let stopped = false;
-    loadCategoryVideos(group, "Learning", selectedId, [code]).then((rows) => {
-      if (stopped || !rows?.length) return;
+    const targets = selectedId
+      ? [selectedId]
+      : tree.filter((node) => !node.parentId && !node.hidden).slice(0, 4).map((node) => node.id);
+    Promise.all(targets.map((id) => loadCategoryVideos(group, "Learning", id, [code]).catch(() => []))).then((batches) => {
+      if (stopped) return;
+      const rows = unique(batches.flat());
+      if (!rows.length) {
+        setNotice(`No ${code.toUpperCase()} videos yet. Still looking.`);
+        return;
+      }
       setExtra((current) => unique([...current, ...rows]));
       onFilter(rows);
-    }).catch(() => {});
+      setNotice(`${code.toUpperCase()} videos are ready.`);
+    });
     return () => { stopped = true; };
   }, [languages[0]]);
   const [suggestions, setSuggestions] = useState([]);
