@@ -45,6 +45,9 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   const [instruction, setInstruction] = useState(() => readJson(memoryKey(ageGroup), {}).language || languages[0] || "en");
   const [suggestions, setSuggestions] = useState([]);
   const [blocked, setBlocked] = useState(new Set());
+  useEffect(() => {
+    if (group) blockedVideoIds(group).then(setBlocked);
+  }, [group]);
   const group = ageGroup || videos[0]?.ageGroup;
   const iqraOpen = selectedId === IQRA || selectedId?.startsWith("cat_iqra_");
   const choices = [...new Set((languages.length ? languages : ["en"]).map((code) => String(code).slice(0, 2).toLowerCase()))];
