@@ -53,14 +53,15 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
     const existing = base.find((row) => row.category === category && row.language === language && !taken.has(row.name.toLowerCase()));
     const replacement = replacements[key];
     const found = resolved[key];
-    const row = replacement || found || existing || {
-      name: "Looking for a channel",
-      query: `${category.replaceAll("_", " ")} for kids`,
+    const fallback = existing || {
+      name: `${String(category).replaceAll("_", " ")} for kids`,
+      query: `${String(category).replaceAll("_", " ")} for kids`,
       language,
       category,
       kind: "topic",
     };
-    return { ...row, key, pending: !replacement && !found && !existing?.channelId };
+    const row = replacement || found || fallback;
+    return { ...row, key };
   })).filter((row) => !taken.has(row.name.toLowerCase()));
 
   const refresh = async () => {
@@ -77,15 +78,20 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
     if (!profile) return undefined;
     let stopped = false;
     const run = async () => {
-      for (const category of EDUCATIONAL_CATEGORIES) {
-        for (const language of languages) {
-          if (stopped) return;
-          const key = `${category}:${language}`;
-          if (resolved[key]) continue;
-          const next = await nextChannelChoice({ ageGroup: profile.ageGroup, language, category, exclude: added });
-          if (stopped || !next) continue;
-          setResolved((current) => ({ ...current, [key]: { name: next.title, query: next.title, channelId: next.channelId, language, category, kind: "topic" } }));
-        }
+      const jobs = EDUCATIONAL_CATEGORIES.flatMap((category) => languages.map((language) => ({ category, language, key: `${category}:${language}` })));
+      for (let i = 0; i < jobs.length && !stopped; i += 4) {
+        const batch = jobs.slice(i, i + 4);
+        const found = await Promise.all(batch.map(async (job) => {
+          try {
+            const next = await nextChannelChoice({ ageGroup: profile.ageGroup, language: job.language, category: job.category, exclude: added });
+            return next ? [job.key, { name: next.title, query: next.title, channelId: next.channelId, language: job.language, category: job.category, kind: "topic" }] : null;
+          } catch {
+            return null;
+          }
+        }));
+        if (stopped) return;
+        const updates = Object.fromEntries(found.filter(Boolean));
+        if (Object.keys(updates).length) setResolved((current) => ({ ...current, ...updates }));
       }
     };
     run();
@@ -152,10 +158,10 @@ export default function TopicSuggestionsPanel({ t, onChanged }) {
         {slots.map((row) => (
           <li key={row.key} className="flex items-center justify-between gap-3 py-3">
             <div>
-              <p className="font-semibold">{row.channelId ? row.name : "Looking for a channel"}</p>
+              <p className="font-semibold">{row.name}</p>
               <p className="text-xs text-muted-foreground">{LANGUAGES.find((language) => language.code === row.language)?.nativeName || row.language.toUpperCase()} · {String(row.category).replaceAll("_", " ")}</p>
             </div>
-            <button type="button" disabled={busy === row.key || !row.channelId} onClick={() => add(row)} className="flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+            <button type="button" disabled={busy === row.key || !(row.channelId || row.query)} onClick={() => add(row)} className="flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
               {busy === row.key ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               {t("curator.add")}
             </button>
