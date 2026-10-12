@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Coins, Tv, Loader2, ShieldCheck, SkipForward, ListMusic } from "lucide-react";
+import { ArrowLeft, Coins, Tv, Loader2, ShieldCheck, SkipForward, Ban, ListMusic } from "lucide-react";
 import { EDUCATIONAL_CATEGORIES, ENTERTAINMENT_CATEGORY, TOKEN_RULES, entertainmentCostFor } from "@/domain/constants";
 import { updateComprehensionScore } from "@/domain/adaptive";
 import { SOFT_PAUSE_LINES, pickRandom } from "@/data/intermissions";
 import { useI18n } from "@/lib/i18n";
-import { loadProfileForToday, getTodaySession, saveSession, saveProfile, getWatchedVideoIds, recordWatchedVideo, clearWatchedHistory } from "@/adapters/localDb";
+import { loadProfileForToday, getTodaySession, saveSession, saveProfile, getWatchedVideoIds, recordWatchedVideo, clearWatchedHistory, blockVideo } from "@/adapters/localDb";
 import { loadFeed, makeQueue, YoutubeApiError } from "@/app/feed";
 import { recordPreference } from "@/app/preferences";
 import SafePlayerView from "@/components/SafePlayerView";
@@ -236,15 +236,18 @@ export default function Watch() {
     setPhase("ready");
   };
   const handleSkip = () => {
-    if (queue[queueIndex]) {
-      recordWatchedVideo(profileId, queue[queueIndex].id);
-      recordPreference(profileId, queue[queueIndex], "skip");
-    }
     const nextIndex = queueIndex + 1;
     if (nextIndex >= queue.length) return setPhase("ready");
-    const nextVideo = queue[nextIndex];
     setQueueIndex(nextIndex);
-    if (nextVideo.category === ENTERTAINMENT_CATEGORY) spendTokens(nextVideo, entertainmentCostFor(profile.ageGroup));
+    setPhase("ready");
+  };
+  const handleBlock = async () => {
+    const video = queue[queueIndex];
+    if (!video) return;
+    await blockVideo(profileId, video.id);
+    setQueue((current) => current.filter((item) => item.id !== video.id));
+    setSuggested((current) => current.filter((item) => item.id !== video.id));
+    setQueueIndex(0);
     setPhase("ready");
   };
 
@@ -312,7 +315,8 @@ export default function Watch() {
                   <span className="rounded-full bg-muted px-3 py-1 font-semibold">{durationLabel(current)}</span>
                   {current.category === ENTERTAINMENT_CATEGORY && <span>{t("watch.funUnlocked")}</span>}
                 </div>
-                <button type="button" onClick={handleSkip} aria-label={t("player.skip")} className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-5 font-heading text-base font-bold hover:bg-accent"><SkipForward className="h-5 w-5" /> {t("player.skip")}</button>
+                <button type="button" onClick={handleSkip} aria-label={t("player.skip")} className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-5 font-heading text-base font-bold hover:bg-accent"><SkipForward className="h-5 w-5" /> Skip</button>
+                <button type="button" onClick={handleBlock} aria-label="Block this video" className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-5 font-heading text-base font-bold text-destructive hover:bg-destructive/10"><Ban className="h-5 w-5" /> Block</button>
               </div>
             )}
             <div className="space-y-3">

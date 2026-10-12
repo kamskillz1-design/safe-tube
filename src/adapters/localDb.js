@@ -100,6 +100,18 @@ export const listLibraryVideos = () => db.libraryVideos.toArray();
 export const libraryVideosForAge = (ageGroup) =>
   db.libraryVideos.where("ageGroup").equals(ageGroup).toArray();
 export const putLibraryVideos = (videos) => db.libraryVideos.bulkPut(videos);
+export const deleteLibraryVideo = (id) => db.libraryVideos.delete(id);
+
+export async function blockedVideoIds(profileId) {
+  const row = await db.contentCache.get(`blocked:${profileId}`);
+  return new Set(row?.data || []);
+}
+export async function blockVideo(profileId, videoId) {
+  const ids = [...(await blockedVideoIds(profileId))];
+  if (!ids.includes(videoId)) ids.push(videoId);
+  await db.contentCache.put({ key: `blocked:${profileId}`, data: ids.slice(-200), cachedAt: Date.now() });
+  if (videoId) await db.libraryVideos.delete(videoId);
+}
 
 // --- Cross-device backup ---
 export async function exportBackup() {

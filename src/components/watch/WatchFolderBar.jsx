@@ -5,6 +5,8 @@ import CategoryBrowse, { videosInCategory } from "@/components/CategoryBrowse";
 import { loadCategoryVideos, startCategoryFill } from "@/app/categoryLoad";
 import { startersFor } from "@/data/starterVideos";
 import { belongsIn } from "@/app/categoryLoad";
+import { ageContentGate, durationGate } from "@/domain/gates";
+import { blockedVideoIds } from "@/adapters/localDb";
 import { startSlowInflow } from "@/app/inflow";
 import { IQRA_LEVELS, iqraQuery } from "@/content/packs/iqra";
 
@@ -42,6 +44,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   const [notice, setNotice] = useState("Videos for this category will load over time.");
   const [instruction, setInstruction] = useState(() => readJson(memoryKey(ageGroup), {}).language || languages[0] || "en");
   const [suggestions, setSuggestions] = useState([]);
+  const [blocked, setBlocked] = useState(new Set());
   const group = ageGroup || videos[0]?.ageGroup;
   const iqraOpen = selectedId === IQRA || selectedId?.startsWith("cat_iqra_");
   const choices = [...new Set((languages.length ? languages : ["en"]).map((code) => String(code).slice(0, 2).toLowerCase()))];
@@ -95,7 +98,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
   }, [group, instruction, selectedId, tree]);
 
   useEffect(() => {
-    const filtered = unique(forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction)).filter((video) => belongsIn(video, selectedId));
+    const filtered = unique(forLanguage(videosInCategory([...videos, ...extra], tree, selectedId), instruction)).filter((video) => !blocked.has(video.id) && belongsIn(video, selectedId) && durationGate(video.durationSeconds, group) && ageContentGate(video, group));
     setSuggestions(filtered.length ? shuffleFresh(filtered, readJson(seenKey(group), [])).slice(0, 12) : []);
     if (filtered.length) onFilter(filtered);
   }, [selectedId, videos, tree, extra, group, instruction]);
@@ -111,7 +114,7 @@ export default function WatchFolderBar({ videos, ageGroup, languages = ["en"], r
     setNotice(`${language.toUpperCase()} videos will load over time.`);
     setSuggestions([]);
     const starters = startersFor(group, id);
-    const existing = unique(shuffleFresh(forLanguage(videosInCategory([...videos, ...extra, ...starters], tree, id), language), readJson(seenKey(group), []))).filter((video) => belongsIn(video, id));
+    const existing = unique(shuffleFresh(forLanguage(videosInCategory([...videos, ...extra, ...starters], tree, id), language), readJson(seenKey(group), []))).filter((video) => !blocked.has(video.id) && belongsIn(video, id) && durationGate(video.durationSeconds, group) && ageContentGate(video, group));
     if (starters.length) setExtra((current) => unique([...starters, ...current]));
     onFilter(existing);
     if (existing.length) setSuggestions(existing.slice(0, 12));
