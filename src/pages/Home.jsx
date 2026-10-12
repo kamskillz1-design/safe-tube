@@ -34,15 +34,17 @@ export default function Home() {
             <Link
               to="/dashboard"
               aria-label={t("nav.parents")}
-              className="grid h-12 w-12 place-items-center rounded-full border border-border bg-card text-foreground shadow-sm hover:bg-accent"
+              className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-sm hover:bg-accent"
             >
               <ShieldCheck className="h-5 w-5" />
+              <span>Parent area</span>
             </Link>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 pb-28 sm:px-6 lg:pb-16">
+        <p className="mb-4 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">Parents: open <span className="font-semibold text-foreground">Parent area</span> to add a child, choose channels, and manage settings.</p>
         {profiles === null ? (
           <div className="flex justify-center py-24" role="status" aria-label={t("common.loading")}>
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

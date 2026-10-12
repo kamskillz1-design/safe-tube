@@ -278,7 +278,7 @@ export default function Watch() {
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitch languages={languages} value={watchLanguage} onChange={chooseLanguage} />
             <TokenBadge tokens={profile.educationalTokens} />
-            <Link to="/dashboard" aria-label={t("common.parentSettings")} className="grid h-12 w-12 place-items-center rounded-full border border-border bg-card hover:bg-accent"><ShieldCheck className="h-5 w-5" /></Link>
+            <Link to="/dashboard" aria-label={t("common.parentSettings")} className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-3 hover:bg-accent"><ShieldCheck className="h-5 w-5" /><span className="hidden text-sm font-semibold sm:inline">Parents</span></Link>
           </div>
         </div>
       </header>
