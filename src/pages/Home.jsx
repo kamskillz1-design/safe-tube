@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck, Plus, Tv, Loader2 } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { listProfiles } from "@/adapters/localDb";
 import { useI18n } from "@/lib/i18n";
 import ProfileCard from "@/components/profiles/ProfileCard";
@@ -31,6 +32,7 @@ export default function Home() {
           <BrandLink />
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
+            <ThemeToggle />
             <Link
               to="/dashboard"
               aria-label={t("nav.parents")}

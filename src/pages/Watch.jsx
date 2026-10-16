@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Coins, Tv, Loader2, ShieldCheck, SkipForward, Ban, ListMusic } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { EDUCATIONAL_CATEGORIES, ENTERTAINMENT_CATEGORY, TOKEN_RULES, entertainmentCostFor } from "@/domain/constants";
 import { updateComprehensionScore } from "@/domain/adaptive";
 import { SOFT_PAUSE_LINES, pickRandom } from "@/data/intermissions";
@@ -278,6 +279,7 @@ export default function Watch() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitch languages={languages} value={watchLanguage} onChange={chooseLanguage} />
+            <ThemeToggle />
             <TokenBadge tokens={profile.educationalTokens} />
             <Link to="/dashboard" aria-label={t("common.parentSettings")} className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-3 hover:bg-accent"><ShieldCheck className="h-5 w-5" /><span className="hidden text-sm font-semibold sm:inline">Parents</span></Link>
           </div>

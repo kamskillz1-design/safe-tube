@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, Pencil, Trash2, Users, ShieldCheck, Download, Loader2, LogOut, BookCheck } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { listProfiles, deleteProfile } from "@/adapters/localDb";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/AuthContext";
@@ -92,6 +93,7 @@ export default function Dashboard() {
           </Link>
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
+            <ThemeToggle />
             <button type="button" onClick={signOut} className="flex h-12 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
               <LogOut className="h-4 w-4" /> {t("common.signOut")}
             </button>
